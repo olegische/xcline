@@ -30,6 +30,8 @@ import {
 	openRouterDefaultModelInfo,
 	vertexDefaultModelId,
 	vertexModels,
+	xrouterModels,
+	xrouterDefaultModelId,
 } from "../../../../src/shared/api"
 import { ExtensionMessage } from "../../../../src/shared/ExtensionMessage"
 import { useExtensionState } from "../../context/ExtensionStateContext"
@@ -141,6 +143,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 						zIndex: OPENROUTER_MODEL_PICKER_Z_INDEX + 1,
 					}}>
 					<VSCodeOption value="openrouter">OpenRouter</VSCodeOption>
+					<VSCodeOption value="xrouter">xRouter</VSCodeOption>
 					<VSCodeOption value="anthropic">Anthropic</VSCodeOption>
 					<VSCodeOption value="gemini">Google Gemini</VSCodeOption>
 					<VSCodeOption value="deepseek">DeepSeek</VSCodeOption>
@@ -329,12 +332,35 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 							color: "var(--vscode-descriptionForeground)",
 						}}>
 						This key is stored locally and only used to make API requests from this extension.{" "}
-						{/* {!apiConfiguration?.openRouterApiKey && (
-							<span style={{ color: "var(--vscode-charts-green)" }}>
-								(<span style={{ fontWeight: 500 }}>Note:</span> OpenRouter is recommended for high rate
-								limits, prompt caching, and wider selection of models.)
-							</span>
-						)} */}
+					</p>
+				</div>
+			)}
+
+			{selectedProvider === "xrouter" && (
+				<div>
+					<VSCodeTextField
+						value={apiConfiguration?.xRouterApiKey || ""}
+						style={{ width: "100%" }}
+						type="password"
+						onInput={handleInputChange("xRouterApiKey")}
+						placeholder="Enter API Key...">
+						<span style={{ fontWeight: 500 }}>xRouter API Key</span>
+					</VSCodeTextField>
+					{!apiConfiguration?.xRouterApiKey && (
+						<VSCodeButtonLink
+							href={getXRouterAuthUrl(uriScheme)}
+							style={{ margin: "5px 0 0 0" }}
+							appearance="secondary">
+							Get xRouter API Key
+						</VSCodeButtonLink>
+					)}
+					<p
+						style={{
+							fontSize: "12px",
+							marginTop: "5px",
+							color: "var(--vscode-descriptionForeground)",
+						}}>
+						This key is stored locally and only used to make API requests from this extension.{" "}
 					</p>
 				</div>
 			)}
@@ -732,6 +758,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 							{selectedProvider === "openai-native" && createDropdown(openAiNativeModels)}
 							{selectedProvider === "deepseek" && createDropdown(deepSeekModels)}
 							{selectedProvider === "mistral" && createDropdown(mistralModels)}
+							{selectedProvider === "xrouter" && createDropdown(xrouterModels)}
 						</div>
 
 						<ModelInfoView
@@ -758,7 +785,11 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 }
 
 export function getOpenRouterAuthUrl(uriScheme?: string) {
-	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://saoudrizwan.claude-dev/openrouter`
+	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://olegische.xcline/openrouter`
+}
+
+export function getXRouterAuthUrl(uriScheme?: string) {
+	return `https://xrouter.ru/auth?callback_url=${uriScheme || "vscode"}://olegische.xcline/xrouter`
 }
 
 export const formatPrice = (price: number) => {
@@ -935,6 +966,12 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration) {
 				selectedProvider: provider,
 				selectedModelId: apiConfiguration?.openRouterModelId || openRouterDefaultModelId,
 				selectedModelInfo: apiConfiguration?.openRouterModelInfo || openRouterDefaultModelInfo,
+			}
+		case "xrouter":
+			return {
+				selectedProvider: provider,
+				selectedModelId: apiConfiguration?.xRouterModelId || xrouterDefaultModelId,
+				selectedModelInfo: apiConfiguration?.xRouterModelInfo || xrouterModels[xrouterDefaultModelId],
 			}
 		case "openai":
 			return {

@@ -384,6 +384,7 @@ export const deepSeekModels = {
 // XRouter
 // https://xrouter.ru/models?order=newest&supported_parameters=tools
 export type XRouterModelId = keyof typeof xrouterModels
+export const xrouterDefaultModelId: XRouterModelId = "gigachat/gigachat"
 export const xrouterModels = {
 	"gigachat/gigachat": {
 		maxTokens: 4096,
