@@ -1,8 +1,8 @@
 {
-	"name": "claude-dev",
-	"displayName": "Cline",
+	"name": "xcline",
+	"displayName": "xCline",
 	"description": "Autonomous coding agent right in your IDE, capable of creating/editing files, running commands, using the browser, and more with your permission every step of the way.",
-	"version": "3.1.11",
+	"version": "1.0.0",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -12,15 +12,15 @@
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "Cline Bot Inc."
+		"name": "Oleg Rom"
 	},
 	"license": "Apache-2.0",
-	"publisher": "saoudrizwan",
+	"publisher": "olegische",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/cline/cline"
+		"url": "https://github.com/olegische/xcline"
 	},
-	"homepage": "https://cline.bot",
+	"homepage": "https://github.com/olegische/xcline",
 	"categories": [
 		"AI",
 		"Chat",
@@ -30,7 +30,7 @@
 		"Testing"
 	],
 	"keywords": [
-		"cline",
+		"xcline",
 		"claude",
 		"dev",
 		"mcp",
@@ -41,7 +41,10 @@
 		"chatgpt",
 		"sonnet",
 		"ai",
-		"llama"
+		"llama",
+		"gigachat",
+		"yandexgpt",
+		"xrouter"
 	],
 	"activationEvents": [],
 	"main": "./dist/extension.js",
@@ -49,51 +52,51 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "claude-dev-ActivityBar",
-					"title": "Cline",
+					"id": "xcline-ActivityBar",
+					"title": "xCline",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
 		"views": {
-			"claude-dev-ActivityBar": [
+			"xcline-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "claude-dev.SidebarProvider",
+					"id": "xcline.SidebarProvider",
 					"name": ""
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "cline.plusButtonClicked",
+				"command": "xcline.plusButtonClicked",
 				"title": "New Task",
 				"icon": "$(add)"
 			},
 			{
-				"command": "cline.mcpButtonClicked",
+				"command": "xcline.mcpButtonClicked",
 				"title": "MCP Servers",
 				"icon": "$(server)"
 			},
 			{
-				"command": "cline.historyButtonClicked",
+				"command": "xcline.historyButtonClicked",
 				"title": "History",
 				"icon": "$(history)"
 			},
 			{
-				"command": "cline.popoutButtonClicked",
+				"command": "xcline.popoutButtonClicked",
 				"title": "Open in Editor",
 				"icon": "$(link-external)"
 			},
 			{
-				"command": "cline.settingsButtonClicked",
+				"command": "xcline.settingsButtonClicked",
 				"title": "Settings",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "cline.openInNewTab",
+				"command": "xcline.openInNewTab",
 				"title": "Open In New Tab",
-				"category": "Cline"
+				"category": "xCline"
 			}
 		],
 		"menus": {
@@ -101,27 +104,27 @@
 				{
 					"command": "cline.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == xcline.SidebarProvider"
 				},
 				{
 					"command": "cline.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == xcline.SidebarProvider"
 				},
 				{
 					"command": "cline.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == xcline.SidebarProvider"
 				},
 				{
 					"command": "cline.popoutButtonClicked",
 					"group": "navigation@4",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == xcline.SidebarProvider"
 				},
 				{
 					"command": "cline.settingsButtonClicked",
 					"group": "navigation@5",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == xcline.SidebarProvider"
 				}
 			]
 		}
