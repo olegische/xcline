@@ -1,3 +1,14 @@
+# xCline
+
+xCline is a fork of [Cline](https://github.com/cline/cline) that extends the capabilities of the original VSCode extension by adding support for additional LLM providers. The main feature is integration with xrouter.ru - an OpenAI API-compatible provider that gives access to Russian Large Language Models:
+
+- **YandexGPT** - a powerful language model from Yandex
+- **GigaChat** - an advanced LLM developed by Sber
+
+This integration allows you to use these models through the familiar Cline interface while maintaining all the powerful features of the original extension like file editing, terminal commands, browser control, and more.
+
+---
+
 # Cline – \#1 on OpenRouter
 
 <p align="center">
@@ -47,7 +58,7 @@ Thanks to [Claude 3.5 Sonnet's agentic coding capabilities](https://www-cdn.ant
 
 ### Use any API and Model
 
-Cline supports API providers like OpenRouter, Anthropic, OpenAI, Google Gemini, AWS Bedrock, Azure, and GCP Vertex. You can also configure any OpenAI compatible API, or use a local model through LM Studio/Ollama. Through integration with xrouter.ru, you now have access to Yandex and GigaChat LLMs, expanding the range of available models. If you're using OpenRouter, the extension fetches their latest model list, allowing you to use the newest models as soon as they're available.
+Cline supports API providers like OpenRouter, Anthropic, OpenAI, Google Gemini, AWS Bedrock, Azure, and GCP Vertex. You can also configure any OpenAI compatible API, or use a local model through LM Studio/Ollama. If you're using OpenRouter, the extension fetches their latest model list, allowing you to use the newest models as soon as they're available.
 
 The extension also keeps track of total tokens and API usage cost for the entire task loop and individual requests, keeping you informed of spend every step of the way.
 
