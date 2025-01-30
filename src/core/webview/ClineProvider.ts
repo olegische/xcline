@@ -716,6 +716,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		const xrouter: ApiProvider = "xrouter"
 		await this.updateGlobalState("apiProvider", xrouter)
 		await this.storeSecret("xRouterApiKey", apiKey)
+		await this.refreshXRouterModels() // Обновляем модели после сохранения ключа
 		await this.postStateToWebview()
 		if (this.cline) {
 			this.cline.api = buildApiHandler({
