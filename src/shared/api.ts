@@ -55,7 +55,6 @@ export interface ModelInfo {
 	supportsImages?: boolean
 	supportsComputerUse?: boolean
 	supportsPromptCache: boolean // this value is hardcoded for now
-	supportsToolCalls?: boolean
 	inputPrice?: number
 	outputPrice?: number
 	cacheWritesPrice?: number
@@ -383,6 +382,7 @@ export const deepSeekModels = {
 } as const satisfies Record<string, ModelInfo>
 
 // XRouter
+// https://xrouter.ru/models?order=newest&supported_parameters=tools
 export type XRouterModelId = keyof typeof xrouterModels
 export const xrouterModels = {
 	"gigachat/gigachat": {
@@ -390,7 +390,6 @@ export const xrouterModels = {
 		contextWindow: 32768,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsToolCalls: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "A lightweight model for simple tasks requiring maximum speed.",
@@ -400,7 +399,6 @@ export const xrouterModels = {
 		contextWindow: 32768,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsToolCalls: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "An advanced model for complex tasks requiring creativity and better adherence to instructions.",
@@ -410,7 +408,6 @@ export const xrouterModels = {
 		contextWindow: 32768,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsToolCalls: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "A premium model for the most demanding tasks, requiring maximum precision, creativity, and context understanding.",
@@ -420,7 +417,6 @@ export const xrouterModels = {
 		contextWindow: 8192,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsToolCalls: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "Enhanced model for more complex tasks, available in both synchronous and asynchronous modes.",
@@ -430,7 +426,6 @@ export const xrouterModels = {
 		contextWindow: 32000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsToolCalls: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "Extended version of YandexGPT Pro for tasks requiring large context lengths up to 32,000 tokens.",
@@ -440,7 +435,6 @@ export const xrouterModels = {
 		contextWindow: 8192,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsToolCalls: true,
 		inputPrice: 0,
 		outputPrice: 0,
 		description: "Powerful large-scale model for highly complex tasks, available in synchronous and asynchronous modes.",

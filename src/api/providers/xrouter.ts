@@ -7,6 +7,8 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
 import delay from "delay"
 
+// Configuration
+export const xrouterBaseUrl = "https://xrouter.ru/api/v1"
 // Default model and info for xrouter
 export const xrouterDefaultModelId = "gigachat/gigachat"
 export const xrouterDefaultModelInfo: ModelInfo = {
@@ -26,7 +28,7 @@ export class XRouterHandler implements ApiHandler {
     constructor(options: ApiHandlerOptions) {
         this.options = options
         this.client = new OpenAI({
-            baseURL: "https://xrouter.ru/api/v1",
+            baseURL: xrouterBaseUrl,
             apiKey: this.options.xRouterApiKey,
             defaultHeaders: {
                 "X-Title": "xCline",
@@ -79,7 +81,7 @@ export class XRouterHandler implements ApiHandler {
         await delay(500) // FIXME: necessary delay to ensure generation endpoint is ready
 
         try {
-            const response = await axios.get(`https://xrouter.ru/api/v1/generation?id=${genId}`, {
+            const response = await axios.get(`${xrouterBaseUrl}/generation?id=${genId}`, {
                 headers: {
                     Authorization: `Bearer ${this.options.xRouterApiKey}`,
                 },
