@@ -55,10 +55,14 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 
 	const handleInputChange = (field: keyof ApiConfiguration) => (event: any) => {
+		const newValue = event.target.value
 		setApiConfiguration({
 			...apiConfiguration,
-			[field]: event.target.value,
+			[field]: newValue,
 		})
+		if (field === "xRouterApiKey" && selectedProvider === "xrouter" && newValue) {
+			requestLocalModels()
+		}
 	}
 
 	const { selectedProvider, selectedModelId, selectedModelInfo } = useMemo(() => {
