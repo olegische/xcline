@@ -52,51 +52,51 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "xcline-ActivityBar",
-					"title": "xCline",
+					"id": "claude-dev-ActivityBar",
+					"title": "Cline",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
 		"views": {
-			"xcline-ActivityBar": [
+			"claude-dev-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "xcline.SidebarProvider",
+					"id": "claude-dev.SidebarProvider",
 					"name": ""
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "xcline.plusButtonClicked",
+				"command": "cline.plusButtonClicked",
 				"title": "New Task",
 				"icon": "$(add)"
 			},
 			{
-				"command": "xcline.mcpButtonClicked",
+				"command": "cline.mcpButtonClicked",
 				"title": "MCP Servers",
 				"icon": "$(server)"
 			},
 			{
-				"command": "xcline.historyButtonClicked",
+				"command": "cline.historyButtonClicked",
 				"title": "History",
 				"icon": "$(history)"
 			},
 			{
-				"command": "xcline.popoutButtonClicked",
+				"command": "cline.popoutButtonClicked",
 				"title": "Open in Editor",
 				"icon": "$(link-external)"
 			},
 			{
-				"command": "xcline.settingsButtonClicked",
+				"command": "cline.settingsButtonClicked",
 				"title": "Settings",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "xcline.openInNewTab",
+				"command": "cline.openInNewTab",
 				"title": "Open In New Tab",
-				"category": "xCline"
+				"category": "Cline"
 			}
 		],
 		"menus": {
@@ -104,27 +104,27 @@
 				{
 					"command": "cline.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == xcline.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider"
 				},
 				{
 					"command": "cline.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "view == xcline.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider"
 				},
 				{
 					"command": "cline.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == xcline.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider"
 				},
 				{
 					"command": "cline.popoutButtonClicked",
 					"group": "navigation@4",
-					"when": "view == xcline.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider"
 				},
 				{
 					"command": "cline.settingsButtonClicked",
 					"group": "navigation@5",
-					"when": "view == xcline.SidebarProvider"
+					"when": "view == claude-dev.SidebarProvider"
 				}
 			]
 		}
