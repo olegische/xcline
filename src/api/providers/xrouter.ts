@@ -30,9 +30,10 @@ export class XRouterHandler implements ApiHandler {
         this.options = options
         this.client = new OpenAI({
             baseURL: xrouterBaseUrl,
-            apiKey: this.options.xRouterApiKey,
+            apiKey: "dummy", // OpenAI SDK требует любой apiKey
             defaultHeaders: {
                 "X-Title": "xCline",
+                "Authorization": `Bearer ${this.options.xRouterApiKey}`,
             },
         })
     }
