@@ -30,6 +30,7 @@ export class OpenRouterHandler implements ApiHandler {
 			...convertToOpenAiMessages(messages),
 		]
 
+		//<NOT_USE>
 		// prompt caching: https://openrouter.ai/docs/prompt-caching
 		// this is specifically for claude models (some models may 'support prompt caching' automatically without this)
 		switch (this.getModel().id) {
@@ -102,6 +103,7 @@ export class OpenRouterHandler implements ApiHandler {
 		if (this.getModel().id === "deepseek/deepseek-chat") {
 			shouldApplyMiddleOutTransform = true
 		}
+		//</NOT_USE>
 
 		// @ts-ignore-next-line
 		const stream = await this.client.chat.completions.create({
