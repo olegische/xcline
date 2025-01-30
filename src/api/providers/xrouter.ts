@@ -8,7 +8,8 @@ import { ApiStream } from "../transform/stream"
 import delay from "delay"
 
 // Configuration
-export const xrouterBaseUrl = "https://xrouter.ru/api/v1"
+export const xrouterBaseUrl = "https://localhost:8000/api/v1"
+// export const xrouterBaseUrl = "https://xrouter.ru/api/v1"
 // Default model and info for xrouter
 export const xrouterDefaultModelId = "gigachat/gigachat"
 export const xrouterDefaultModelInfo: ModelInfo = {
