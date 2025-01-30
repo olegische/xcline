@@ -69,60 +69,60 @@
 		},
 		"commands": [
 			{
-				"command": "cline.plusButtonClicked",
+				"command": "xcline.plusButtonClicked",
 				"title": "New Task",
 				"icon": "$(add)"
 			},
 			{
-				"command": "cline.mcpButtonClicked",
+				"command": "xcline.mcpButtonClicked",
 				"title": "MCP Servers",
 				"icon": "$(server)"
 			},
 			{
-				"command": "cline.historyButtonClicked",
+				"command": "xcline.historyButtonClicked",
 				"title": "History",
 				"icon": "$(history)"
 			},
 			{
-				"command": "cline.popoutButtonClicked",
+				"command": "xcline.popoutButtonClicked",
 				"title": "Open in Editor",
 				"icon": "$(link-external)"
 			},
 			{
-				"command": "cline.settingsButtonClicked",
+				"command": "xcline.settingsButtonClicked",
 				"title": "Settings",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "cline.openInNewTab",
+				"command": "xcline.openInNewTab",
 				"title": "Open In New Tab",
-				"category": "Cline"
+				"category": "xCline"
 			}
 		],
 		"menus": {
 			"view/title": [
 				{
-					"command": "cline.plusButtonClicked",
+					"command": "xcline.plusButtonClicked",
 					"group": "navigation@1",
 					"when": "view == xcline.SidebarProvider"
 				},
 				{
-					"command": "cline.mcpButtonClicked",
+					"command": "xcline.mcpButtonClicked",
 					"group": "navigation@2",
 					"when": "view == xcline.SidebarProvider"
 				},
 				{
-					"command": "cline.historyButtonClicked",
+					"command": "xcline.historyButtonClicked",
 					"group": "navigation@3",
 					"when": "view == xcline.SidebarProvider"
 				},
 				{
-					"command": "cline.popoutButtonClicked",
+					"command": "xcline.popoutButtonClicked",
 					"group": "navigation@4",
 					"when": "view == xcline.SidebarProvider"
 				},
 				{
-					"command": "cline.settingsButtonClicked",
+					"command": "xcline.settingsButtonClicked",
 					"group": "navigation@5",
 					"when": "view == xcline.SidebarProvider"
 				}

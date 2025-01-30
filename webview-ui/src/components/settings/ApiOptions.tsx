@@ -38,6 +38,7 @@ import { useExtensionState } from "../../context/ExtensionStateContext"
 import { vscode } from "../../utils/vscode"
 import VSCodeButtonLink from "../common/VSCodeButtonLink"
 import OpenRouterModelPicker, { ModelDescriptionMarkdown, OPENROUTER_MODEL_PICKER_Z_INDEX } from "./OpenRouterModelPicker"
+import XRouterModelPicker from "./XRouterModelPicker"
 
 interface ApiOptionsProps {
 	showModelOptions: boolean
@@ -76,8 +77,18 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 				type: "requestLmStudioModels",
 				text: apiConfiguration?.lmStudioBaseUrl,
 			})
+		} else if (selectedProvider === "xrouter") {
+			vscode.postMessage({
+				type: "refreshXRouterModels"
+			})
 		}
 	}, [selectedProvider, apiConfiguration?.ollamaBaseUrl, apiConfiguration?.lmStudioBaseUrl])
+
+	useEffect(() => {
+		if (selectedProvider === "xrouter") {
+			requestLocalModels()
+		}
+	}, [selectedProvider, requestLocalModels])
 	useEffect(() => {
 		if (selectedProvider === "ollama" || selectedProvider === "lmstudio") {
 			requestLocalModels()
@@ -91,6 +102,14 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 			setOllamaModels(message.ollamaModels)
 		} else if (message.type === "lmStudioModels" && message.lmStudioModels) {
 			setLmStudioModels(message.lmStudioModels)
+		} else if (message.type === "xRouterModels" && message.xRouterModels) {
+			const updatedModels = message.xRouterModels
+			if (apiConfiguration?.xRouterModelId) {
+				setApiConfiguration({
+					...apiConfiguration,
+					xRouterModelInfo: updatedModels[apiConfiguration.xRouterModelId] || updatedModels[xrouterDefaultModelId],
+				})
+			}
 		}
 	}, [])
 	useEvent("message", handleMessage)
@@ -741,7 +760,10 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 
 			{selectedProvider === "openrouter" && showModelOptions && <OpenRouterModelPicker />}
 
+			{selectedProvider === "xrouter" && showModelOptions && <XRouterModelPicker />}
+
 			{selectedProvider !== "openrouter" &&
+				selectedProvider !== "xrouter" &&
 				selectedProvider !== "openai" &&
 				selectedProvider !== "ollama" &&
 				selectedProvider !== "lmstudio" &&
@@ -758,7 +780,6 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 							{selectedProvider === "openai-native" && createDropdown(openAiNativeModels)}
 							{selectedProvider === "deepseek" && createDropdown(deepSeekModels)}
 							{selectedProvider === "mistral" && createDropdown(mistralModels)}
-							{selectedProvider === "xrouter" && createDropdown(xrouterModels)}
 						</div>
 
 						<ModelInfoView
