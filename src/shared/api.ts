@@ -10,6 +10,7 @@ export type ApiProvider =
 	| "openai-native"
 	| "deepseek"
 	| "mistral"
+	| "xrouter"
 
 export interface ApiHandlerOptions {
 	apiModelId?: string
@@ -18,6 +19,9 @@ export interface ApiHandlerOptions {
 	openRouterApiKey?: string
 	openRouterModelId?: string
 	openRouterModelInfo?: ModelInfo
+	xRouterApiKey?: string
+	xRouterModelId?: string
+	xRouterModelInfo?: ModelInfo
 	awsAccessKey?: string
 	awsSecretKey?: string
 	awsSessionToken?: string
@@ -51,6 +55,7 @@ export interface ModelInfo {
 	supportsImages?: boolean
 	supportsComputerUse?: boolean
 	supportsPromptCache: boolean // this value is hardcoded for now
+	supportsToolCalls?: boolean
 	inputPrice?: number
 	outputPrice?: number
 	cacheWritesPrice?: number
@@ -374,6 +379,71 @@ export const deepSeekModels = {
 		outputPrice: 0.28,
 		cacheWritesPrice: 0.14,
 		cacheReadsPrice: 0.014,
+	},
+} as const satisfies Record<string, ModelInfo>
+
+// XRouter
+export type XRouterModelId = keyof typeof xrouterModels
+export const xrouterModels = {
+	"gigachat/gigachat": {
+		maxTokens: 4096,
+		contextWindow: 32768,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsToolCalls: true,
+		inputPrice: 0,
+		outputPrice: 0,
+		description: "A lightweight model for simple tasks requiring maximum speed.",
+	},
+	"gigachat/gigachat-pro": {
+		maxTokens: 4096,
+		contextWindow: 32768,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsToolCalls: true,
+		inputPrice: 0,
+		outputPrice: 0,
+		description: "An advanced model for complex tasks requiring creativity and better adherence to instructions.",
+	},
+	"gigachat/gigachat-max": {
+		maxTokens: 8192,
+		contextWindow: 32768,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsToolCalls: true,
+		inputPrice: 0,
+		outputPrice: 0,
+		description: "A premium model for the most demanding tasks, requiring maximum precision, creativity, and context understanding.",
+	},
+	"yandex/yandexgpt-pro:latest": {
+		maxTokens: 4096,
+		contextWindow: 8192,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsToolCalls: true,
+		inputPrice: 0,
+		outputPrice: 0,
+		description: "Enhanced model for more complex tasks, available in both synchronous and asynchronous modes.",
+	},
+	"yandex/yandexgpt-pro-32k:latest": {
+		maxTokens: 8192,
+		contextWindow: 32000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsToolCalls: true,
+		inputPrice: 0,
+		outputPrice: 0,
+		description: "Extended version of YandexGPT Pro for tasks requiring large context lengths up to 32,000 tokens.",
+	},
+	"yandex/llama-70b:latest": {
+		maxTokens: 4096,
+		contextWindow: 8192,
+		supportsImages: false,
+		supportsPromptCache: false,
+		supportsToolCalls: true,
+		inputPrice: 0,
+		outputPrice: 0,
+		description: "Powerful large-scale model for highly complex tasks, available in synchronous and asynchronous modes.",
 	},
 } as const satisfies Record<string, ModelInfo>
 
