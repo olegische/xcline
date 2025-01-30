@@ -13,6 +13,7 @@ import { getTheme } from "../../integrations/theme/getTheme"
 import WorkspaceTracker from "../../integrations/workspace/WorkspaceTracker"
 import { McpHub } from "../../services/mcp/McpHub"
 import { ApiProvider, ModelInfo } from "../../shared/api"
+import { xrouterBaseUrl } from "../../api/providers/xrouter"
 import { findLast } from "../../shared/array"
 import { ExtensionMessage, ExtensionState } from "../../shared/ExtensionMessage"
 import { HistoryItem } from "../../shared/HistoryItem"
@@ -34,6 +35,7 @@ https://github.com/KumarVariable/vscode-extension-sidebar-html/blob/master/src/c
 type SecretKey =
 	| "apiKey"
 	| "openRouterApiKey"
+	| "xRouterApiKey"
 	| "awsAccessKey"
 	| "awsSecretKey"
 	| "awsSessionToken"
@@ -62,6 +64,8 @@ type GlobalStateKey =
 	| "azureApiVersion"
 	| "openRouterModelId"
 	| "openRouterModelInfo"
+	| "xRouterModelId"
+	| "xRouterModelInfo"
 	| "autoApprovalSettings"
 	| "browserSettings"
 
@@ -69,6 +73,7 @@ export const GlobalFileNames = {
 	apiConversationHistory: "api_conversation_history.json",
 	uiMessages: "ui_messages.json",
 	openRouterModels: "openrouter_models.json",
+	xRouterModels: "xrouter_models.json",
 	mcpSettings: "cline_mcp_settings.json",
 	clineRules: ".clinerules",
 }
@@ -340,6 +345,14 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 								})
 							}
 						})
+						this.readXRouterModels().then((xRouterModels) => {
+							if (xRouterModels) {
+								this.postMessageToWebview({
+									type: "xRouterModels",
+									xRouterModels,
+								})
+							}
+						})
 						// gui relies on model info to be up-to-date to provide the most accurate pricing, so we need to fetch the latest details on launch.
 						// we do this for all users since many users switch between api providers and if they were to switch back to openrouter it would be showing outdated model info if we hadn't retrieved the latest at this point
 						// (see normalizeApiConfiguration > openrouter)
@@ -351,6 +364,18 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 									await this.updateGlobalState(
 										"openRouterModelInfo",
 										openRouterModels[apiConfiguration.openRouterModelId],
+									)
+									await this.postStateToWebview()
+								}
+							}
+						})
+						this.refreshXRouterModels().then(async (xRouterModels) => {
+							if (xRouterModels) {
+								const { apiConfiguration } = await this.getState()
+								if (apiConfiguration.xRouterModelId) {
+									await this.updateGlobalState(
+										"xRouterModelInfo",
+										xRouterModels[apiConfiguration.xRouterModelId],
 									)
 									await this.postStateToWebview()
 								}
@@ -397,6 +422,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 								azureApiVersion,
 								openRouterModelId,
 								openRouterModelInfo,
+								xRouterApiKey,
+								xRouterModelId,
+								xRouterModelInfo,
 							} = message.apiConfiguration
 							await this.updateGlobalState("apiProvider", apiProvider)
 							await this.updateGlobalState("apiModelId", apiModelId)
@@ -424,6 +452,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 							await this.updateGlobalState("azureApiVersion", azureApiVersion)
 							await this.updateGlobalState("openRouterModelId", openRouterModelId)
 							await this.updateGlobalState("openRouterModelInfo", openRouterModelInfo)
+							await this.storeSecret("xRouterApiKey", xRouterApiKey)
+							await this.updateGlobalState("xRouterModelId", xRouterModelId)
+							await this.updateGlobalState("xRouterModelInfo", xRouterModelInfo)
 							if (this.cline) {
 								this.cline.api = buildApiHandler(message.apiConfiguration)
 							}
@@ -509,6 +540,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						break
 					case "refreshOpenRouterModels":
 						await this.refreshOpenRouterModels()
+						break
+					case "refreshXRouterModels":
+						await this.refreshXRouterModels()
 						break
 					case "openImage":
 						openImage(message.text!)
@@ -665,6 +699,32 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 
 	// OpenRouter
 
+	async handleXRouterCallback(code: string) {
+		let apiKey: string
+		try {
+			const response = await axios.post("https://xrouter.ru/api/v1/auth/keys", { code })
+			if (response.data && response.data.key) {
+				apiKey = response.data.key
+			} else {
+				throw new Error("Invalid response from XRouter API")
+			}
+		} catch (error) {
+			console.error("Error exchanging code for API key:", error)
+			throw error
+		}
+
+		const xrouter: ApiProvider = "xrouter"
+		await this.updateGlobalState("apiProvider", xrouter)
+		await this.storeSecret("xRouterApiKey", apiKey)
+		await this.postStateToWebview()
+		if (this.cline) {
+			this.cline.api = buildApiHandler({
+				apiProvider: xrouter,
+				xRouterApiKey: apiKey,
+			})
+		}
+	}
+
 	async handleOpenRouterCallback(code: string) {
 		let apiKey: string
 		try {
@@ -698,6 +758,16 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		return cacheDir
 	}
 
+	async readXRouterModels(): Promise<Record<string, ModelInfo> | undefined> {
+		const xRouterModelsFilePath = path.join(await this.ensureCacheDirectoryExists(), GlobalFileNames.xRouterModels)
+		const fileExists = await fileExistsAtPath(xRouterModelsFilePath)
+		if (fileExists) {
+			const fileContents = await fs.readFile(xRouterModelsFilePath, "utf8")
+			return JSON.parse(fileContents)
+		}
+		return undefined
+	}
+
 	async readOpenRouterModels(): Promise<Record<string, ModelInfo> | undefined> {
 		const openRouterModelsFilePath = path.join(await this.ensureCacheDirectoryExists(), GlobalFileNames.openRouterModels)
 		const fileExists = await fileExistsAtPath(openRouterModelsFilePath)
@@ -706,6 +776,46 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			return JSON.parse(fileContents)
 		}
 		return undefined
+	}
+
+	async refreshXRouterModels() {
+		let models: Record<string, ModelInfo> = {}
+		try {
+			const response = await axios.get(`${xrouterBaseUrl}/models`)
+			if (response.data?.data) {
+				const rawModels = response.data.data
+				const parsePrice = (price: any) => {
+					if (price) {
+						return parseFloat(price) * 1_000_000
+					}
+					return undefined
+				}
+				for (const rawModel of rawModels) {
+					const modelInfo: ModelInfo = {
+						maxTokens: rawModel.top_provider?.max_completion_tokens,
+						contextWindow: rawModel.context_length,
+						supportsImages: rawModel.architecture?.modality?.includes("image"),
+						supportsPromptCache: false,
+						inputPrice: parsePrice(rawModel.pricing?.prompt),
+						outputPrice: parsePrice(rawModel.pricing?.completion),
+						description: rawModel.description,
+					}
+					models[rawModel.id] = modelInfo
+				}
+			} else {
+				console.error("Invalid response from XRouter API")
+			}
+			const xRouterModelsFilePath = path.join(await this.ensureCacheDirectoryExists(), GlobalFileNames.xRouterModels)
+			await fs.writeFile(xRouterModelsFilePath, JSON.stringify(models))
+			console.log("XRouter models fetched and saved", models)
+			await this.postMessageToWebview({
+				type: "xRouterModels",
+				xRouterModels: models,
+			})
+		} catch (error) {
+			console.error("Error fetching XRouter models:", error)
+		}
+		return models
 	}
 
 	async refreshOpenRouterModels() {
@@ -1008,6 +1118,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			apiModelId,
 			apiKey,
 			openRouterApiKey,
+			xRouterApiKey,
 			awsAccessKey,
 			awsSecretKey,
 			awsSessionToken,
@@ -1030,6 +1141,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			azureApiVersion,
 			openRouterModelId,
 			openRouterModelInfo,
+			xRouterModelId,
+			xRouterModelInfo,
 			lastShownAnnouncementId,
 			customInstructions,
 			taskHistory,
@@ -1040,6 +1153,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			this.getGlobalState("apiModelId") as Promise<string | undefined>,
 			this.getSecret("apiKey") as Promise<string | undefined>,
 			this.getSecret("openRouterApiKey") as Promise<string | undefined>,
+			this.getSecret("xRouterApiKey") as Promise<string | undefined>,
 			this.getSecret("awsAccessKey") as Promise<string | undefined>,
 			this.getSecret("awsSecretKey") as Promise<string | undefined>,
 			this.getSecret("awsSessionToken") as Promise<string | undefined>,
@@ -1062,6 +1176,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			this.getGlobalState("azureApiVersion") as Promise<string | undefined>,
 			this.getGlobalState("openRouterModelId") as Promise<string | undefined>,
 			this.getGlobalState("openRouterModelInfo") as Promise<ModelInfo | undefined>,
+			this.getGlobalState("xRouterModelId") as Promise<string | undefined>,
+			this.getGlobalState("xRouterModelInfo") as Promise<ModelInfo | undefined>,
 			this.getGlobalState("lastShownAnnouncementId") as Promise<string | undefined>,
 			this.getGlobalState("customInstructions") as Promise<string | undefined>,
 			this.getGlobalState("taskHistory") as Promise<HistoryItem[] | undefined>,
@@ -1111,6 +1227,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 				azureApiVersion,
 				openRouterModelId,
 				openRouterModelInfo,
+				xRouterModelId,
+				xRouterModelInfo,
 			},
 			lastShownAnnouncementId,
 			customInstructions,
@@ -1186,6 +1304,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		const secretKeys: SecretKey[] = [
 			"apiKey",
 			"openRouterApiKey",
+			"xRouterApiKey",
 			"awsAccessKey",
 			"awsSecretKey",
 			"awsSessionToken",
