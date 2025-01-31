@@ -33,6 +33,7 @@ export class XRouterHandler implements ApiHandler {
             apiKey: this.options.xRouterApiKey,
             defaultHeaders: {
                 "X-Title": "xCline",
+                "Authorization": `Bearer ${this.options.xRouterApiKey}`,
             },
         })
     }
