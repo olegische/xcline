@@ -54,16 +54,13 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 	const [azureApiVersionSelected, setAzureApiVersionSelected] = useState(!!apiConfiguration?.azureApiVersion)
 	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 
-	const handleInputChange = (field: keyof ApiConfiguration) => (event: any) => {
-		const newValue = event.target.value
-		setApiConfiguration({
-			...apiConfiguration,
-			[field]: newValue,
-		})
-		if (field === "xRouterApiKey" && selectedProvider === "xrouter" && newValue) {
-			requestLocalModels()
-		}
-	}
+    const handleInputChange = (field: keyof ApiConfiguration) => (event: any) => {
+        const newValue = event.target.value
+        setApiConfiguration({
+            ...apiConfiguration,
+            [field]: newValue,
+        })
+    }
 
 	const { selectedProvider, selectedModelId, selectedModelInfo } = useMemo(() => {
 		return normalizeApiConfiguration(apiConfiguration)
