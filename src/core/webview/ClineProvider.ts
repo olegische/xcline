@@ -453,6 +453,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 							await this.updateGlobalState("openRouterModelId", openRouterModelId)
 							await this.updateGlobalState("openRouterModelInfo", openRouterModelInfo)
 							await this.storeSecret("xRouterApiKey", xRouterApiKey)
+							if (xRouterApiKey) {
+								vscode.window.showInformationMessage("XRouter API key saved")
+							}
 							await this.updateGlobalState("xRouterModelId", xRouterModelId)
 							await this.updateGlobalState("xRouterModelInfo", xRouterModelInfo)
 							if (this.cline) {
