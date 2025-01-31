@@ -782,7 +782,11 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	async refreshXRouterModels() {
 		let models: Record<string, ModelInfo> = {}
 		try {
-			const response = await axios.get(`${xrouterBaseUrl}/models`)
+			const response = await axios.get(`${xrouterBaseUrl}/models`, {
+				headers: {
+					"X-Title": "xCline"
+				}
+			})
 			if (response.data?.data) {
 				const rawModels = response.data.data
 				const parsePrice = (price: any) => {
