@@ -74,6 +74,7 @@ export class XRouterHandler implements ApiHandler {
             const response = await axios.get(`${xrouterBaseUrl}/generation?id=${genId}`, {
                 headers: {
                     Authorization: `Bearer ${this.options.xRouterApiKey}`,
+                    "X-Title": "xCline",
                 },
                 timeout: 5_000,
             })
