@@ -1,6 +1,7 @@
 export type ApiProvider =
 	| "anthropic"
 	| "openrouter"
+	| "xrouter"
 	| "bedrock"
 	| "vertex"
 	| "openai"
@@ -10,7 +11,6 @@ export type ApiProvider =
 	| "openai-native"
 	| "deepseek"
 	| "mistral"
-	| "xrouter"
 
 export interface ApiHandlerOptions {
 	apiModelId?: string
@@ -181,6 +181,19 @@ export const openRouterDefaultModelInfo: ModelInfo = {
 	cacheReadsPrice: 0.3,
 	description:
 		"The new Claude 3.5 Sonnet delivers better-than-Opus capabilities, faster-than-Sonnet speeds, at the same Sonnet prices. Sonnet is particularly good at:\n\n- Coding: New Sonnet scores ~49% on SWE-Bench Verified, higher than the last best score, and without any fancy prompt scaffolding\n- Data science: Augments human data science expertise; navigates unstructured data while using multiple tools for insights\n- Visual processing: excelling at interpreting charts, graphs, and images, accurately transcribing text to derive insights beyond just the text alone\n- Agentic tasks: exceptional tool use, making it great at agentic tasks (i.e. complex, multi-step problem solving tasks that require engaging with other systems)\n\n#multimodal\n\n_This is a faster endpoint, made available in collaboration with Anthropic, that is self-moderated: response moderation happens on the provider's side instead of OpenRouter's. For requests that pass moderation, it's identical to the [Standard](/anthropic/claude-3.5-sonnet) variant._",
+}
+
+// XRouter
+// https://xrouter.info/models?order=newest&supported_parameters=tools
+export const xRouterDefaultModelId = "gigachat/gigachat"
+export const xRouterDefaultModelInfo: ModelInfo = {
+    maxTokens: 4096,
+    contextWindow: 32768,
+    supportsImages: false,
+    supportsPromptCache: false,
+    inputPrice: 10.2,  // 0.0000102 * 1_000_000
+    outputPrice: 10.2, // 0.0000102 * 1_000_000
+    description: "A lightweight model for simple tasks requiring maximum speed."
 }
 
 // Vertex AI
@@ -378,67 +391,6 @@ export const deepSeekModels = {
 		outputPrice: 0.28,
 		cacheWritesPrice: 0.14,
 		cacheReadsPrice: 0.014,
-	},
-} as const satisfies Record<string, ModelInfo>
-
-// XRouter
-// https://xrouter.ru/models?order=newest&supported_parameters=tools
-export type XRouterModelId = keyof typeof xrouterModels
-export const xrouterDefaultModelId: XRouterModelId = "gigachat/gigachat"
-export const xrouterModels = {
-	"gigachat/gigachat": {
-		maxTokens: 4096,
-		contextWindow: 32768,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0,
-		outputPrice: 0,
-		description: "A lightweight model for simple tasks requiring maximum speed.",
-	},
-	"gigachat/gigachat-pro": {
-		maxTokens: 4096,
-		contextWindow: 32768,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0,
-		outputPrice: 0,
-		description: "An advanced model for complex tasks requiring creativity and better adherence to instructions.",
-	},
-	"gigachat/gigachat-max": {
-		maxTokens: 8192,
-		contextWindow: 32768,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0,
-		outputPrice: 0,
-		description: "A premium model for the most demanding tasks, requiring maximum precision, creativity, and context understanding.",
-	},
-	"yandex/yandexgpt-pro:latest": {
-		maxTokens: 4096,
-		contextWindow: 8192,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0,
-		outputPrice: 0,
-		description: "Enhanced model for more complex tasks, available in both synchronous and asynchronous modes.",
-	},
-	"yandex/yandexgpt-pro-32k:latest": {
-		maxTokens: 8192,
-		contextWindow: 32000,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0,
-		outputPrice: 0,
-		description: "Extended version of YandexGPT Pro for tasks requiring large context lengths up to 32,000 tokens.",
-	},
-	"yandex/llama-70b:latest": {
-		maxTokens: 4096,
-		contextWindow: 8192,
-		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0,
-		outputPrice: 0,
-		description: "Powerful large-scale model for highly complex tasks, available in synchronous and asynchronous modes.",
 	},
 } as const satisfies Record<string, ModelInfo>
 

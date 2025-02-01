@@ -102,7 +102,7 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 		)
 	}, [apiConfiguration?.apiProvider])
 
-	const shouldShowPromptCacheInfo = doesModelSupportPromptCache && apiConfiguration?.apiProvider !== "openrouter"
+	const shouldShowPromptCacheInfo = doesModelSupportPromptCache && apiConfiguration?.apiProvider !== "openrouter" && apiConfiguration?.apiProvider !== "xrouter"
 
 	return (
 		<div style={{ padding: "10px 13px 10px 13px" }}>

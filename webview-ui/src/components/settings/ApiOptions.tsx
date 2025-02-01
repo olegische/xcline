@@ -28,10 +28,10 @@ import {
 	openAiNativeModels,
 	openRouterDefaultModelId,
 	openRouterDefaultModelInfo,
+	xRouterDefaultModelId,
+	xRouterDefaultModelInfo,
 	vertexDefaultModelId,
 	vertexModels,
-	xrouterModels,
-	xrouterDefaultModelId,
 } from "../../../../src/shared/api"
 import { ExtensionMessage } from "../../../../src/shared/ExtensionMessage"
 import { useExtensionState } from "../../context/ExtensionStateContext"
@@ -78,17 +78,10 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 				type: "requestLmStudioModels",
 				text: apiConfiguration?.lmStudioBaseUrl,
 			})
-		} else if (selectedProvider === "xrouter") {
-			vscode.postMessage({
-				type: "refreshXRouterModels"
-			})
 		}
 	}, [selectedProvider, apiConfiguration?.ollamaBaseUrl, apiConfiguration?.lmStudioBaseUrl])
 
 	useEffect(() => {
-		if (selectedProvider === "xrouter") {
-			requestLocalModels()
-		}
 	}, [selectedProvider, requestLocalModels])
 	useEffect(() => {
 		if (selectedProvider === "ollama" || selectedProvider === "lmstudio") {
@@ -103,14 +96,6 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 			setOllamaModels(message.ollamaModels)
 		} else if (message.type === "lmStudioModels" && message.lmStudioModels) {
 			setLmStudioModels(message.lmStudioModels)
-		} else if (message.type === "xRouterModels" && message.xRouterModels) {
-			const updatedModels = message.xRouterModels
-			if (apiConfiguration?.xRouterModelId) {
-				setApiConfiguration({
-					...apiConfiguration,
-					xRouterModelInfo: updatedModels[apiConfiguration.xRouterModelId] || updatedModels[xrouterDefaultModelId],
-				})
-			}
 		}
 	}, [])
 	useEvent("message", handleMessage)
@@ -364,7 +349,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 						type="password"
 						onInput={handleInputChange("xRouterApiKey")}
 						placeholder="Enter API Key...">
-						<span style={{ fontWeight: 500 }}>xRouter API Key</span>
+						<span style={{ fontWeight: 500 }}>XRouter API Key</span>
 					</VSCodeTextField>
 					{!apiConfiguration?.xRouterApiKey && (
 						<VSCodeButtonLink
@@ -811,7 +796,7 @@ export function getOpenRouterAuthUrl(uriScheme?: string) {
 }
 
 export function getXRouterAuthUrl(uriScheme?: string) {
-	return `https://xrouter.ru/auth?callback_url=${uriScheme || "vscode"}://olegische.xcline/xrouter`
+	return `https://xrouter.info/auth?callback_url=${uriScheme || "vscode"}://olegische.xcline/xrouter`
 }
 
 export const formatPrice = (price: number) => {
@@ -992,8 +977,8 @@ export function normalizeApiConfiguration(apiConfiguration?: ApiConfiguration) {
 		case "xrouter":
 			return {
 				selectedProvider: provider,
-				selectedModelId: apiConfiguration?.xRouterModelId || xrouterDefaultModelId,
-				selectedModelInfo: apiConfiguration?.xRouterModelInfo || xrouterModels[xrouterDefaultModelId],
+				selectedModelId: apiConfiguration?.xRouterModelId || xRouterDefaultModelId,
+				selectedModelInfo: apiConfiguration?.xRouterModelInfo || xRouterDefaultModelInfo
 			}
 		case "openai":
 			return {

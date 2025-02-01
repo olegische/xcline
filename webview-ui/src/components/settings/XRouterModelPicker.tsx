@@ -1,10 +1,9 @@
 import { VSCodeLink, VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import Fuse from "fuse.js"
-import React, { KeyboardEvent, memo, useEffect, useMemo, useRef, useState } from "react"
-import { useRemark } from "react-remark"
+import React, { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import { useMount } from "react-use"
 import styled from "styled-components"
-import { xrouterDefaultModelId } from "../../../../src/shared/api"
+import { xRouterDefaultModelId } from "../../../../src/shared/api"
 import { useExtensionState } from "../../context/ExtensionStateContext"
 import { vscode } from "../../utils/vscode"
 import { highlight } from "../history/HistoryView"
@@ -12,7 +11,7 @@ import { ModelInfoView, normalizeApiConfiguration } from "./ApiOptions"
 
 const XRouterModelPicker: React.FC = () => {
 	const { apiConfiguration, setApiConfiguration, xRouterModels } = useExtensionState()
-	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.xRouterModelId || xrouterDefaultModelId)
+	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.xRouterModelId || xRouterDefaultModelId)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
 	const [selectedIndex, setSelectedIndex] = useState(-1)
 	const dropdownRef = useRef<HTMLDivElement>(null)
@@ -211,8 +210,8 @@ const XRouterModelPicker: React.FC = () => {
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					The extension automatically fetches the latest list of models available on{" "}
-					<VSCodeLink style={{ display: "inline", fontSize: "inherit" }} href="https://xrouter.ru/models">
-						xRouter.
+					<VSCodeLink style={{ display: "inline", fontSize: "inherit" }} href="https://xrouter.info/models">
+						XRouter.
 					</VSCodeLink>
 					If you're unsure which model to choose, Cline works best with{" "}
 					<VSCodeLink

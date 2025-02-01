@@ -2,7 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import axios from "axios"
 import OpenAI from "openai"
 import { ApiHandler } from "../"
-import { ApiHandlerOptions, ModelInfo } from "../../shared/api"
+import { ApiHandlerOptions, ModelInfo, xRouterDefaultModelId, xRouterDefaultModelInfo } from "../../shared/api"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
 import delay from "delay"
@@ -10,17 +10,6 @@ import delay from "delay"
 // Configuration
 export const xrouterBaseUrl = "http://localhost:8000/api/v1"
 // export const xrouterBaseUrl = "https://xrouter.ru/api/v1"
-// Default model and info for xrouter
-export const xrouterDefaultModelId = "gigachat/gigachat"
-export const xrouterDefaultModelInfo: ModelInfo = {
-    maxTokens: 4096,
-    contextWindow: 8000,
-    supportsImages: false,
-    supportsPromptCache: false,
-    inputPrice: 0,
-    outputPrice: 0,
-    description: "Default GigaChat model"
-}
 
 export class XRouterHandler implements ApiHandler {
     private options: ApiHandlerOptions
@@ -33,7 +22,6 @@ export class XRouterHandler implements ApiHandler {
             apiKey: this.options.xRouterApiKey,
             defaultHeaders: {
                 "X-Title": "xCline",
-                "Authorization": `Bearer ${this.options.xRouterApiKey}`,
             },
         })
     }
@@ -111,8 +99,8 @@ export class XRouterHandler implements ApiHandler {
             return { id: modelId, info: modelInfo }
         }
         return {
-            id: xrouterDefaultModelId,
-            info: xrouterDefaultModelInfo,
+            id: xRouterDefaultModelId,
+            info: xRouterDefaultModelInfo,
         }
     }
 }

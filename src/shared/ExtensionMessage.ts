@@ -19,9 +19,9 @@ export interface ExtensionMessage {
 		| "invoke"
 		| "partialMessage"
 		| "openRouterModels"
+		| "xRouterModels"
 		| "mcpServers"
 		| "relinquishControl"
-		| "xRouterModels"
 	text?: string
 	action?: "chatButtonClicked" | "mcpButtonClicked" | "settingsButtonClicked" | "historyButtonClicked" | "didBecomeVisible"
 	invoke?: "sendMessage" | "primaryButtonClick" | "secondaryButtonClick"
@@ -32,8 +32,8 @@ export interface ExtensionMessage {
 	filePaths?: string[]
 	partialMessage?: ClineMessage
 	openRouterModels?: Record<string, ModelInfo>
-	mcpServers?: McpServer[]
 	xRouterModels?: Record<string, ModelInfo>
+	mcpServers?: McpServer[]
 }
 
 export interface ExtensionState {

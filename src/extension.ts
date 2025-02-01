@@ -140,13 +140,13 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 				break
 			}
-			case "/xrouter": {
-				const code = query.get("code")
-				if (code) {
-					await visibleProvider.handleXRouterCallback(code)
-				}
-				break
-			}
+			// case "/xrouter": {
+			// 	const code = query.get("code")
+			// 	if (code) {
+			// 		await visibleProvider.handleXRouterCallback(code)
+			// 	}
+			// 	break
+			// }
 			default:
 				break
 		}

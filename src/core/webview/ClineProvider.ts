@@ -369,6 +369,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 								}
 							}
 						})
+						// gui relies on model info to be up-to-date to provide the most accurate pricing, so we need to fetch the latest details on launch.
+						// we do this for all users since many users switch between api providers and if they were to switch back to openrouter it would be showing outdated model info if we hadn't retrieved the latest at this point
+						// (see normalizeApiConfiguration > xrouter)
 						this.refreshXRouterModels().then(async (xRouterModels) => {
 							if (xRouterModels) {
 								const { apiConfiguration } = await this.getState()
@@ -400,6 +403,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 								apiModelId,
 								apiKey,
 								openRouterApiKey,
+								xRouterApiKey,
 								awsAccessKey,
 								awsSecretKey,
 								awsSessionToken,
@@ -422,7 +426,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 								azureApiVersion,
 								openRouterModelId,
 								openRouterModelInfo,
-								xRouterApiKey,
 								xRouterModelId,
 								xRouterModelInfo,
 							} = message.apiConfiguration
@@ -430,6 +433,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 							await this.updateGlobalState("apiModelId", apiModelId)
 							await this.storeSecret("apiKey", apiKey)
 							await this.storeSecret("openRouterApiKey", openRouterApiKey)
+							await this.storeSecret("xRouterApiKey", xRouterApiKey)
 							await this.storeSecret("awsAccessKey", awsAccessKey)
 							await this.storeSecret("awsSecretKey", awsSecretKey)
 							await this.storeSecret("awsSessionToken", awsSessionToken)
@@ -452,7 +456,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 							await this.updateGlobalState("azureApiVersion", azureApiVersion)
 							await this.updateGlobalState("openRouterModelId", openRouterModelId)
 							await this.updateGlobalState("openRouterModelInfo", openRouterModelInfo)
-							await this.storeSecret("xRouterApiKey", xRouterApiKey)
 							await this.updateGlobalState("xRouterModelId", xRouterModelId)
 							await this.updateGlobalState("xRouterModelInfo", xRouterModelInfo)
 							if (this.cline) {
@@ -697,34 +700,35 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 		}
 	}
 
+	// XRouter
+	
+	// async handleXRouterCallback(code: string) {
+	// 	let apiKey: string
+	// 	try {
+	// 		const response = await axios.post("https://xrouter.ru/api/v1/auth/keys", { code })
+	// 		if (response.data && response.data.key) {
+	// 			apiKey = response.data.key
+	// 		} else {
+	// 			throw new Error("Invalid response from XRouter API")
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Error exchanging code for API key:", error)
+	// 		throw error
+	// 	}
+		
+	// 	const xrouter: ApiProvider = "xrouter"
+	// 	await this.updateGlobalState("apiProvider", xrouter)
+	// 	await this.storeSecret("xRouterApiKey", apiKey)
+	// 	await this.postStateToWebview() // Сначала обновляем UI
+	// 	if (this.cline) {
+	// 		this.cline.api = buildApiHandler({
+	// 			apiProvider: xrouter,
+	// 			xRouterApiKey: apiKey,
+	// 		})
+	// 	}
+	// }
+	
 	// OpenRouter
-
-	async handleXRouterCallback(code: string) {
-		let apiKey: string
-		try {
-			const response = await axios.post("https://xrouter.ru/api/v1/auth/keys", { code })
-			if (response.data && response.data.key) {
-				apiKey = response.data.key
-			} else {
-				throw new Error("Invalid response from XRouter API")
-			}
-		} catch (error) {
-			console.error("Error exchanging code for API key:", error)
-			throw error
-		}
-
-		const xrouter: ApiProvider = "xrouter"
-		await this.updateGlobalState("apiProvider", xrouter)
-		await this.storeSecret("xRouterApiKey", apiKey)
-		await this.postStateToWebview() // Сначала обновляем UI
-		await this.refreshXRouterModels() // Потом обновляем модели
-		if (this.cline) {
-			this.cline.api = buildApiHandler({
-				apiProvider: xrouter,
-				xRouterApiKey: apiKey,
-			})
-		}
-	}
 
 	async handleOpenRouterCallback(code: string) {
 		let apiKey: string
@@ -1199,8 +1203,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			if (apiKey) {
 				apiProvider = "anthropic"
 			} else {
-				// New users should default to openrouter
-				apiProvider = "openrouter"
+				// New users should default to xrouter
+				apiProvider = "xrouter"
 			}
 		}
 
@@ -1210,6 +1214,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 				apiModelId,
 				apiKey,
 				openRouterApiKey,
+				xRouterApiKey,
 				awsAccessKey,
 				awsSecretKey,
 				awsSessionToken,

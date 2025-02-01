@@ -1,4 +1,4 @@
-import { ApiConfiguration, openRouterDefaultModelId } from "../../../src/shared/api"
+import { ApiConfiguration, openRouterDefaultModelId, xRouterDefaultModelId } from "../../../src/shared/api"
 import { ModelInfo } from "../../../src/shared/api"
 export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): string | undefined {
 	if (apiConfiguration) {
@@ -15,6 +15,11 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 				break
 			case "openrouter":
 				if (!apiConfiguration.openRouterApiKey) {
+					return "You must provide a valid API key or choose a different provider."
+				}
+				break
+			case "xrouter":
+				if (!apiConfiguration.xRouterApiKey) {
 					return "You must provide a valid API key or choose a different provider."
 				}
 				break
@@ -66,6 +71,7 @@ export function validateApiConfiguration(apiConfiguration?: ApiConfiguration): s
 export function validateModelId(
 	apiConfiguration?: ApiConfiguration,
 	openRouterModels?: Record<string, ModelInfo>,
+	xRouterModels?: Record<string, ModelInfo>,
 ): string | undefined {
 	if (apiConfiguration) {
 		switch (apiConfiguration.apiProvider) {
@@ -75,6 +81,16 @@ export function validateModelId(
 					return "You must provide a model ID."
 				}
 				if (openRouterModels && !Object.keys(openRouterModels).includes(modelId)) {
+					// even if the model list endpoint failed, extensionstatecontext will always have the default model info
+					return "The model ID you provided is not available. Please choose a different model."
+				}
+				break
+			case "xrouter":
+				const xModelId = apiConfiguration.xRouterModelId || xRouterDefaultModelId // in case the user hasn't changed the model id, it will be undefined by default
+				if (!xModelId) {
+					return "You must provide a model ID."
+				}
+				if (xRouterModels && !Object.keys(xRouterModels).includes(xModelId)) {
 					// even if the model list endpoint failed, extensionstatecontext will always have the default model info
 					return "The model ID you provided is not available. Please choose a different model."
 				}

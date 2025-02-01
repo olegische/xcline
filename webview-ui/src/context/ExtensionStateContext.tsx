@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { useEvent } from "react-use"
 import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "../../../src/shared/AutoApprovalSettings"
 import { ExtensionMessage, ExtensionState } from "../../../src/shared/ExtensionMessage"
-import { ApiConfiguration, ModelInfo, openRouterDefaultModelId, openRouterDefaultModelInfo } from "../../../src/shared/api"
+import { ApiConfiguration, ModelInfo, openRouterDefaultModelId, openRouterDefaultModelInfo, xRouterDefaultModelId, xRouterDefaultModelInfo } from "../../../src/shared/api"
 import { findLastIndex } from "../../../src/shared/array"
 import { McpServer } from "../../../src/shared/mcp"
 import { convertTextMateToHljs } from "../utils/textMateToHljs"
@@ -42,7 +42,9 @@ export const ExtensionStateContextProvider: React.FC<{
 	const [openRouterModels, setOpenRouterModels] = useState<Record<string, ModelInfo>>({
 		[openRouterDefaultModelId]: openRouterDefaultModelInfo,
 	})
-	const [xRouterModels, setXRouterModels] = useState<Record<string, ModelInfo>>({})
+	const [xRouterModels, setXRouterModels] = useState<Record<string, ModelInfo>>({
+		[xRouterDefaultModelId]: xRouterDefaultModelInfo,
+	})
 	const [mcpServers, setMcpServers] = useState<McpServer[]>([])
 
 	const handleMessage = useCallback((event: MessageEvent) => {
@@ -105,7 +107,10 @@ export const ExtensionStateContextProvider: React.FC<{
 			}
 			case "xRouterModels": {
 				const updatedModels = message.xRouterModels ?? {}
-				setXRouterModels(updatedModels)
+				setXRouterModels({
+					[xRouterDefaultModelId]: xRouterDefaultModelInfo, // in case the extension sent a model list without the default model
+					...updatedModels,
+				})
 				break
 			}
 			case "mcpServers": {
