@@ -8,8 +8,7 @@ import { ApiStream } from "../transform/stream"
 import delay from "delay"
 
 // Configuration
-export const xrouterBaseUrl = "http://localhost:8000/api/v1"
-// export const xrouterBaseUrl = "https://xrouter.ru/api/v1"
+export const xrouterBaseUrl = "http://xrouter.chat/api/v1"
 
 export class XRouterHandler implements ApiHandler {
     private options: ApiHandlerOptions
