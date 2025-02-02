@@ -184,7 +184,7 @@ export const openRouterDefaultModelInfo: ModelInfo = {
 }
 
 // XRouter
-// https://xrouter.info/models?order=newest&supported_parameters=tools
+// https://xrouter.chat/models?order=newest&supported_parameters=tools
 export const xRouterDefaultModelId = "gigachat/gigachat"
 export const xRouterDefaultModelInfo: ModelInfo = {
     maxTokens: 4096,

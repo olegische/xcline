@@ -796,7 +796,7 @@ export function getOpenRouterAuthUrl(uriScheme?: string) {
 }
 
 export function getXRouterAuthUrl(uriScheme?: string) {
-	return `https://xrouter.info/auth?callback_url=${uriScheme || "vscode"}://olegische.xcline/xrouter`
+	return `https://xrouter.chat/auth?callback_url=${uriScheme || "vscode"}://olegische.xcline/xrouter`
 }
 
 export const formatPrice = (price: number) => {

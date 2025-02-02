@@ -210,7 +210,7 @@ const XRouterModelPicker: React.FC = () => {
 						color: "var(--vscode-descriptionForeground)",
 					}}>
 					The extension automatically fetches the latest list of models available on{" "}
-					<VSCodeLink style={{ display: "inline", fontSize: "inherit" }} href="https://xrouter.info/models">
+					<VSCodeLink style={{ display: "inline", fontSize: "inherit" }} href="https://xrouter.chat/models">
 						XRouter.
 					</VSCodeLink>
 					If you're unsure which model to choose, Cline works best with{" "}
