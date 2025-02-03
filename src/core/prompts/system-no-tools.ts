@@ -19,8 +19,8 @@ You have access to a set of tools that are executed upon the user's approval. Yo
 
 # Tool Use Guidelines
 
-1. In <thinking> tags, assess what information you already have and what information you need to proceed with the task.
-2. Choose the most appropriate tool based on the task and the tool descriptions provided. Assess if you need additional information to proceed, and which of the available tools would be most effective for gathering this information.
+1. NEVER send content with tool (function) call.
+2. Choose the most appropriate tool (function) based on the task and the tool descriptions provided. Assess if you need additional information to proceed, and which of the available tools would be most effective for gathering this information.
 3. If multiple actions are needed, use one tool at a time per message to accomplish the task iteratively, with each tool use being informed by the result of the previous tool use. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.
 4. After each tool use, the user will respond with the result of that tool use. This result will provide you with the necessary information to continue your task or make further decisions. This response may include:
   - Information about whether the tool succeeded or failed, along with any reasons for failure.
