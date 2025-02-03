@@ -792,11 +792,11 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 }
 
 export function getOpenRouterAuthUrl(uriScheme?: string) {
-	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://olegische.xcline/openrouter`
+	return `https://openrouter.ai/auth?callback_url=${uriScheme || "vscode"}://xrouter.xcline/openrouter`
 }
 
 export function getXRouterAuthUrl(uriScheme?: string) {
-	return `https://xrouter.info/auth?callback_url=${uriScheme || "vscode"}://olegische.xcline/xrouter`
+	return `https://xrouter.chat/authorize?redirect_url=${uriScheme || "vscode"}://xrouter.xcline/xrouter`
 }
 
 export const formatPrice = (price: number) => {

@@ -15,7 +15,7 @@
 		"name": "Oleg Rom"
 	},
 	"license": "Apache-2.0",
-	"publisher": "olegische",
+	"publisher": "xrouter",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/olegische/xcline"
