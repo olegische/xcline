@@ -1,4 +1,3 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 // Convert tool descriptions from system prompt to OpenAI tools format
@@ -247,7 +246,7 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
 
 // Convert streaming tool calls to XML text
 export function formatToolCallsToXml(toolCalls: OpenAI.Chat.Completions.ChatCompletionChunk["choices"][0]["delta"]["tool_calls"]): string {
-  if (!toolCalls) return "";
+  if (!toolCalls) { return ""; }
 
   return toolCalls.map(toolCall => {
     if (toolCall.type === "function" && toolCall.function) {
