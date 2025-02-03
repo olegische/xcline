@@ -8,6 +8,7 @@ import { ApiStream } from "../transform/stream"
 import delay from "delay"
 import { getSystemTools, formatToolCallsToXml, extractToolCallsFromXml, transformReminderMessage } from "../transform/xrouter-format"
 import { SYSTEM_PROMPT } from "../../core/prompts/system-no-tools"
+import { ExtensionContext } from "vscode"
 
 // Configuration
 export const xrouterBaseUrl = "https://xrouter.chat/api/v1"
@@ -15,9 +16,11 @@ export const xrouterBaseUrl = "https://xrouter.chat/api/v1"
 export class XRouterHandler implements ApiHandler {
     private options: ApiHandlerOptions
     private client: OpenAI
+    private context: ExtensionContext
 
-    constructor(options: ApiHandlerOptions) {
+    constructor(options: ApiHandlerOptions, context: ExtensionContext) {
         this.options = options
+        this.context = context
         this.client = new OpenAI({
             baseURL: xrouterBaseUrl,
             apiKey: this.options.xRouterApiKey,
@@ -62,7 +65,12 @@ export class XRouterHandler implements ApiHandler {
                     };
                 }
             }
-            if (msg.role === 'assistant' && typeof msg.content === 'string') {
+            if (msg.role === 'tool') {
+                const cachedId = this.context.workspaceState.get<string>('lastToolCallId');
+                if (cachedId) {
+                    msg.tool_call_id = cachedId;
+                }
+            } else if (msg.role === 'assistant' && typeof msg.content === 'string') {
                 const { content, tool_calls } = extractToolCallsFromXml(msg.content);
                 return {
                     ...msg,
@@ -106,6 +114,11 @@ export class XRouterHandler implements ApiHandler {
             }
 
             const delta = chunk.choices[0]?.delta
+            if (delta?.tool_calls && delta.tool_calls.length > 0) {
+                const toolCallId = delta.tool_calls[0].id;
+                this.context.workspaceState.update('lastToolCallId', toolCallId);
+            }
+
             if (delta?.content) {
                 yield {
                     type: "text",
