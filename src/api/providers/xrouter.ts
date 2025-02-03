@@ -6,6 +6,8 @@ import { ApiHandlerOptions, ModelInfo, xRouterDefaultModelId, xRouterDefaultMode
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
 import delay from "delay"
+import { getSystemTools, formatToolCallsToXml } from "../transform/xrouter-format"
+import { SYSTEM_PROMPT } from "../../core/prompts/system-no-tools"
 
 // Configuration
 export const xrouterBaseUrl = "https://xrouter.chat/api/v1"
@@ -26,9 +28,17 @@ export class XRouterHandler implements ApiHandler {
     }
 
     async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+        // Get system prompt without tool descriptions
+        const noToolsSystemPrompt = await SYSTEM_PROMPT(
+            process.cwd(),
+            false, // supportsComputerUse
+            {} as any, // mcpHub - not needed for now
+            {} as any  // browserSettings - not needed for now
+        )
+
         // Convert Anthropic messages to OpenAI format
         const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-            { role: "system", content: systemPrompt },
+            { role: "system", content: noToolsSystemPrompt },
             ...convertToOpenAiMessages(messages),
         ]
 
@@ -42,6 +52,7 @@ export class XRouterHandler implements ApiHandler {
             messages: openAiMessages,
             stream: true,
             transforms: shouldApplyMiddleOutTransform ? ["middle-out"] : undefined,
+            tools: getSystemTools(process.cwd()), // Add tools support with current working directory
         })
 
         let genId: string | undefined
@@ -63,6 +74,11 @@ export class XRouterHandler implements ApiHandler {
                 yield {
                     type: "text",
                     text: delta.content,
+                }
+            } else if (delta?.tool_calls) {
+                yield {
+                    type: "text",
+                    text: formatToolCallsToXml(delta.tool_calls)
                 }
             }
         }
