@@ -148,7 +148,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 						zIndex: OPENROUTER_MODEL_PICKER_Z_INDEX + 1,
 					}}>
 					<VSCodeOption value="openrouter">OpenRouter</VSCodeOption>
-					<VSCodeOption value="xrouter">xRouter</VSCodeOption>
+					<VSCodeOption value="xrouter">XRouter</VSCodeOption>
 					<VSCodeOption value="anthropic">Anthropic</VSCodeOption>
 					<VSCodeOption value="gemini">Google Gemini</VSCodeOption>
 					<VSCodeOption value="deepseek">DeepSeek</VSCodeOption>
@@ -356,7 +356,7 @@ const ApiOptions = ({ showModelOptions, apiErrorMessage, modelIdErrorMessage }: 
 							href={getXRouterAuthUrl(uriScheme)}
 							style={{ margin: "5px 0 0 0" }}
 							appearance="secondary">
-							Get xRouter API Key
+							Get XRouter API Key
 						</VSCodeButtonLink>
 					)}
 					<p

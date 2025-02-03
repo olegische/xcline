@@ -43,7 +43,11 @@ const WelcomeView = () => {
 				capabilities.
 			</p>
 
-			<b>To get started, this extension needs an API provider for Claude 3.5 Sonnet.</b>
+			<b>To get started, this extension needs an API provider:</b>
+			<ul style={{ marginTop: "5px", marginBottom: "10px" }}>
+				<li>You can use XRouter for GigaChat/YandexGPT</li>
+				<li>Or use other providers to access Claude 3.5 Sonnet</li>
+			</ul>
 
 			<div style={{ marginTop: "10px" }}>
 				<ApiOptions showModelOptions={false} />
