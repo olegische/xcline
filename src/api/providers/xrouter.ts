@@ -4,10 +4,9 @@ import OpenAI from "openai"
 import { ApiHandler } from "../"
 import { ApiHandlerOptions, ModelInfo, xRouterDefaultModelId, xRouterDefaultModelInfo } from "../../shared/api"
 import { convertToOpenAiMessages } from "../transform/openai-format"
-import { extractToolCallsFromXml } from "../transform/xrouter-format"
 import { ApiStream } from "../transform/stream"
 import delay from "delay"
-import { getSystemTools, formatToolCallsToXml } from "../transform/xrouter-format"
+import { getSystemTools, formatToolCallsToXml, extractToolCallsFromXml, transformReminderMessage } from "../transform/xrouter-format"
 import { SYSTEM_PROMPT } from "../../core/prompts/system-no-tools"
 
 // Configuration
@@ -40,8 +39,14 @@ export class XRouterHandler implements ApiHandler {
         // Convert Anthropic messages to OpenAI format
         const convertedMessages = convertToOpenAiMessages(messages);
         
-        // Process assistant messages to extract tool calls from XML content
+        // Process messages to transform reminders and extract tool calls
         const processedMessages = convertedMessages.map(msg => {
+            if (msg.role === 'user' && typeof msg.content === 'string') {
+                return {
+                    ...msg,
+                    content: transformReminderMessage(msg.content)
+                };
+            }
             if (msg.role === 'assistant' && typeof msg.content === 'string') {
                 const { content, tool_calls } = extractToolCallsFromXml(msg.content);
                 return {

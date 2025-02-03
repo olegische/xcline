@@ -274,7 +274,71 @@ export function formatToolCallsToXml(toolCalls: OpenAI.Chat.Completions.ChatComp
 }
 
 // Extract tool calls from XML content and convert to OpenAI format
+// Transform the reminder message for OpenRouter format
+export function transformReminderMessage(content: string): string {
+  const reminderStart = "# Reminder: Instructions for Tool Use";
+  const reminderEnd = "Always adhere to this format for all tool uses to ensure proper parsing and execution.";
+  
+  // Check if the content contains the reminder message
+  if (content.includes(reminderStart) && content.includes(reminderEnd)) {
+    const newReminder = `# Reminder: Instructions for Tool Use
+
+You must use either tool_calls or function_calls in your response, depending on your capabilities. The response should indicate a tool/function call with the following structure:
+
+For tool_calls:
+{
+  "tool_calls": [{
+    "id": "call_xyz",
+    "type": "function",
+    "function": {
+      "name": "tool_name",
+      "arguments": {
+        "param1": "value1",
+        "param2": "value2"
+      }
+    }
+  }]
+}
+
+For function_calls (deprecated):
+{
+  "function_call": {
+    "name": "tool_name",
+    "arguments": {
+      "param1": "value1",
+      "param2": "value2"
+    }
+  }
+}
+
+For example:
+{
+  "tool_calls": [{
+    "id": "call_abc",
+    "type": "function",
+    "function": {
+      "name": "attempt_completion",
+      "arguments": {
+        "result": "I have completed the task..."
+      }
+    }
+  }]
+}
+
+Always adhere to this format to ensure proper execution of tool/function calls.`;
+
+    // Replace the old reminder with the new one
+    const reminderRegex = new RegExp(`${reminderStart}[\\s\\S]*?${reminderEnd}`);
+    return content.replace(reminderRegex, newReminder);
+  }
+  
+  return content;
+}
+
 export function extractToolCallsFromXml(content: string): { content: string | undefined; tool_calls: OpenAI.Chat.ChatCompletionMessageToolCall[] | undefined } {
+  // Transform reminder message if present
+  content = transformReminderMessage(content);
+  
   const toolCalls: OpenAI.Chat.ChatCompletionMessageToolCall[] = [];
   let remainingContent = content;
 
