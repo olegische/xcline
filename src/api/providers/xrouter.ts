@@ -4,6 +4,7 @@ import OpenAI from "openai"
 import { ApiHandler } from "../"
 import { ApiHandlerOptions, ModelInfo, xRouterDefaultModelId, xRouterDefaultModelInfo } from "../../shared/api"
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { extractToolCallsFromXml } from "../transform/xrouter-format"
 import { ApiStream } from "../transform/stream"
 import delay from "delay"
 import { getSystemTools, formatToolCallsToXml } from "../transform/xrouter-format"
@@ -37,9 +38,24 @@ export class XRouterHandler implements ApiHandler {
         )
 
         // Convert Anthropic messages to OpenAI format
+        const convertedMessages = convertToOpenAiMessages(messages);
+        
+        // Process assistant messages to extract tool calls from XML content
+        const processedMessages = convertedMessages.map(msg => {
+            if (msg.role === 'assistant' && typeof msg.content === 'string') {
+                const { content, tool_calls } = extractToolCallsFromXml(msg.content);
+                return {
+                    ...msg,
+                    content,
+                    tool_calls
+                };
+            }
+            return msg;
+        });
+
         const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
             { role: "system", content: noToolsSystemPrompt },
-            ...convertToOpenAiMessages(messages),
+            ...processedMessages,
         ]
 
         // Always apply middle-out transform since models don't support prompt caching yet

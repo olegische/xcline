@@ -272,3 +272,48 @@ export function formatToolCallsToXml(toolCalls: OpenAI.Chat.Completions.ChatComp
     return "";
   }).join("");
 }
+
+// Extract tool calls from XML content and convert to OpenAI format
+export function extractToolCallsFromXml(content: string): { content: string | undefined; tool_calls: OpenAI.Chat.ChatCompletionMessageToolCall[] | undefined } {
+  const toolCalls: OpenAI.Chat.ChatCompletionMessageToolCall[] = [];
+  let remainingContent = content;
+
+  // Regular expression to match XML tool calls
+  const toolCallRegex = /<(\w+)>\s*((?:<\w+>[^<>]*<\/\w+>\s*)*)<\/\1>/g;
+  let match;
+
+  while ((match = toolCallRegex.exec(content)) !== null) {
+    const toolName = match[1];
+    const paramsXml = match[2];
+    const fullMatch = match[0];
+
+    // Parse parameters from XML
+    const params: Record<string, string> = {};
+    const paramRegex = /<(\w+)>([^<>]*)<\/\1>/g;
+    let paramMatch;
+    while ((paramMatch = paramRegex.exec(paramsXml)) !== null) {
+      params[paramMatch[1]] = paramMatch[2];
+    }
+
+    // Create tool call in OpenAI format
+    toolCalls.push({
+      id: `call_${toolCalls.length + 1}`, // Generate unique ID
+      type: "function",
+      function: {
+        name: toolName,
+        arguments: JSON.stringify(params)
+      }
+    });
+
+    // Remove the tool call from content
+    remainingContent = remainingContent.replace(fullMatch, '');
+  }
+
+  // Clean up remaining content
+  remainingContent = remainingContent.trim();
+
+  return {
+    content: remainingContent || undefined,
+    tool_calls: toolCalls.length > 0 ? toolCalls : undefined
+  };
+}
