@@ -41,11 +41,26 @@ export class XRouterHandler implements ApiHandler {
         
         // Process messages to transform reminders and extract tool calls
         const processedMessages = convertedMessages.map(msg => {
-            if (msg.role === 'user' && typeof msg.content === 'string') {
-                return {
-                    ...msg,
-                    content: transformReminderMessage(msg.content)
-                };
+            if (msg.role === 'user') {
+                if (typeof msg.content === 'string') {
+                    return {
+                        ...msg,
+                        content: transformReminderMessage(msg.content)
+                    };
+                } else if (Array.isArray(msg.content)) {
+                    return {
+                        ...msg,
+                        content: msg.content.map(part => {
+                            if (part.type === 'text') {
+                                return {
+                                    type: "text" as const,
+                                    text: transformReminderMessage(part.text)
+                                };
+                            }
+                            return part;
+                        })
+                    };
+                }
             }
             if (msg.role === 'assistant' && typeof msg.content === 'string') {
                 const { content, tool_calls } = extractToolCallsFromXml(msg.content);

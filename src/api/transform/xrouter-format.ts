@@ -276,11 +276,12 @@ export function formatToolCallsToXml(toolCalls: OpenAI.Chat.Completions.ChatComp
 // Extract tool calls from XML content and convert to OpenAI format
 // Transform the reminder message for OpenRouter format
 export function transformReminderMessage(content: string): string {
+  const errorPrefix = "[ERROR] You did not use a tool in your previous response! Please retry with a tool use.";
   const reminderStart = "# Reminder: Instructions for Tool Use";
   const reminderEnd = "Always adhere to this format for all tool uses to ensure proper parsing and execution.";
   
-  // Check if the content contains the reminder message
-  if (content.includes(reminderStart) && content.includes(reminderEnd)) {
+  // Check if the content contains the core reminder message parts
+  if (content.includes(errorPrefix) && content.includes(reminderStart) && content.includes(reminderEnd)) {
     const newReminder = `# Reminder: Instructions for Tool Use
 
 You must use either tool_calls or function_calls in your response, depending on your capabilities. The response should indicate a tool/function call with the following structure:
@@ -327,8 +328,8 @@ For example:
 
 Always adhere to this format to ensure proper execution of tool/function calls.`;
 
-    // Replace the old reminder with the new one
-    const reminderRegex = new RegExp(`${reminderStart}[\\s\\S]*?${reminderEnd}`);
+    // Replace the old reminder with the new one, preserving any text before and after
+    const reminderRegex = new RegExp(`(${reminderStart.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${reminderEnd.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`);
     return content.replace(reminderRegex, newReminder);
   }
   
