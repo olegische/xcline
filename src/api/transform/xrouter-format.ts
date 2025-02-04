@@ -1,4 +1,67 @@
 import OpenAI from "openai"
+import { Anthropic } from "@anthropic-ai/sdk"
+import { convertToAnthropicMessage } from "./openai-format"
+
+// Transform OpenAI tool calls to Anthropic format with XML content
+export function transformToolCallToContent(completion: OpenAI.Chat.Completions.ChatCompletion): Anthropic.Messages.Message {
+    // First convert to Anthropic format
+    const anthropicMessage = convertToAnthropicMessage(completion)
+    
+    // Extract tool calls from the OpenAI message
+    const toolCalls = completion.choices[0].message.tool_calls
+    
+    if (toolCalls && toolCalls.length > 0) {
+        // Process tool calls to extract thinking parameter
+        const processedToolCalls = toolCalls.map(toolCall => {
+            if (toolCall.type === "function" && toolCall.function) {
+                let args: Record<string, any>;
+                try {
+                    args = JSON.parse(toolCall.function.arguments || "{}");
+                } catch {
+                    args = {};
+                }
+                
+                // Extract thinking from arguments
+                const { thinking, ...otherArgs } = args;
+                
+                return {
+                    ...toolCall,
+                    function: {
+                        ...toolCall.function,
+                        arguments: JSON.stringify(otherArgs)
+                    }
+                };
+            }
+            return toolCall;
+        });
+
+        // Generate XML content for all tool calls with thinking
+        const xmlContent = formatToolCallsToXml(toolCalls);
+        
+        // Replace empty text with XML in the first block
+        if (xmlContent && anthropicMessage.content[0].type === "text") {
+            (anthropicMessage.content[0] as Anthropic.TextBlock).text = xmlContent;
+        }
+
+        // Replace tool_calls in the message with processed ones (without thinking)
+        anthropicMessage.content = anthropicMessage.content.map(block => {
+            if (block.type === "tool_use") {
+                const processedCall = processedToolCalls.find(call => call.id === block.id);
+                if (processedCall && processedCall.type === "function") {
+                    return {
+                        type: "tool_use",
+                        id: processedCall.id,
+                        name: processedCall.function.name,
+                        input: JSON.parse(processedCall.function.arguments || "{}")
+                    };
+                }
+            }
+            return block;
+        });
+    }
+    
+    return anthropicMessage;
+}
 
 // Convert tool descriptions from system prompt to OpenAI tools format
 export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
@@ -284,11 +347,17 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
   ];
 }
 
-// Convert streaming tool calls to XML text
-export function formatToolCallsToXml(toolCalls: OpenAI.Chat.Completions.ChatCompletionChunk["choices"][0]["delta"]["tool_calls"]): string {
+// Convert tool calls to XML text
+export function formatToolCallsToXml(toolCalls: OpenAI.Chat.Completions.ChatCompletionChunk["choices"][0]["delta"]["tool_calls"] | OpenAI.Chat.ChatCompletionMessageToolCall[]): string {
   if (!toolCalls) { return ""; }
 
-  return toolCalls.map(toolCall => {
+  // Add index property if it's missing (for ChatCompletionMessageToolCall)
+  const processedToolCalls = Array.isArray(toolCalls) ? toolCalls.map((call, index) => ({
+    ...call,
+    index: 'index' in call ? call.index : index
+  })) : toolCalls;
+
+  return processedToolCalls.map(toolCall => {
     if (toolCall.type === "function" && toolCall.function) {
       const { name, arguments: argsString } = toolCall.function;
       
@@ -300,9 +369,16 @@ export function formatToolCallsToXml(toolCalls: OpenAI.Chat.Completions.ChatComp
         args = {};
       }
 
+      // Extract thinking from arguments if present
+      const { thinking, ...otherArgs } = args;
+      
       // Build XML string with proper formatting
-      let xml = `\n<${name}>\n`;
-      for (const [key, value] of Object.entries(args)) {
+      let xml = '';
+      if (thinking) {
+        xml += `\n<thinking>${thinking}</thinking>\n`;
+      }
+      xml += `<${name}>\n`;
+      for (const [key, value] of Object.entries(otherArgs)) {
         xml += `<${key}>${value}</${key}>\n`;
       }
       xml += `</${name}>\n`;
