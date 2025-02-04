@@ -25,6 +25,7 @@ describe("Tool Call Transformation", () => {
         const expected = `
 <thinking>Analyzing the file contents</thinking>
 <read_file>
+<tool_use_id>call_1</tool_use_id>
 <path>src/main.ts</path>
 </read_file>
 `
@@ -146,6 +147,7 @@ describe("Tool Call Transformation", () => {
         assert.strictEqual(parsedBlocks[1].type, "tool_use")
         const toolBlock = parsedBlocks[1] as any
         assert.strictEqual(toolBlock.name, "read_file")
+        assert.strictEqual(toolBlock.id, "call_1")
         assert.strictEqual(toolBlock.params.path, "src/main.ts")
         assert.strictEqual(toolBlock.partial, false)
     })

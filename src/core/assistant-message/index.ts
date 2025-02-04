@@ -45,6 +45,7 @@ export const toolParamNames = [
 	"uri",
 	"question",
 	"result",
+	"tool_use_id",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -52,6 +53,7 @@ export type ToolParamName = (typeof toolParamNames)[number]
 export interface ToolUse {
 	type: "tool_use"
 	name: ToolUseName
+	id?: string
 	// params is a partial record, allowing only some or none of the possible parameters to be used
 	params: Partial<Record<ToolParamName, string>>
 	partial: boolean

@@ -37,6 +37,11 @@ export function parseAssistantMessage(assistantMessage: string) {
 			if (currentToolValue.endsWith(toolUseClosingTag)) {
 				// end of a tool use
 				currentToolUse.partial = false
+				// Extract tool_use_id if present
+				if (currentToolUse.params.tool_use_id) {
+					currentToolUse.id = currentToolUse.params.tool_use_id
+					delete currentToolUse.params.tool_use_id
+				}
 				contentBlocks.push(currentToolUse)
 				currentToolUse = undefined
 				continue

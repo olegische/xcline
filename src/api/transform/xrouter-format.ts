@@ -378,6 +378,9 @@ export function formatToolCallsToXml(toolCalls: OpenAI.Chat.Completions.ChatComp
         xml += `\n<thinking>${thinking}</thinking>\n`;
       }
       xml += `<${name}>\n`;
+      if (toolCall.id) {
+        xml += `<tool_use_id>${toolCall.id}</tool_use_id>\n`;
+      }
       for (const [key, value] of Object.entries(otherArgs)) {
         xml += `<${key}>${value}</${key}>\n`;
       }
@@ -477,8 +480,11 @@ export function extractToolCallsFromXml(content: string): { content: string | un
     }
 
     // Create tool call in OpenAI format
+    const toolId = params.tool_use_id || `call_${toolCalls.length + 1}`;
+    delete params.tool_use_id; // Remove tool_use_id from params before creating arguments
+
     toolCalls.push({
-      id: `call_${toolCalls.length + 1}`, // Generate unique ID
+      id: toolId,
       type: "function",
       function: {
         name: toolName,
