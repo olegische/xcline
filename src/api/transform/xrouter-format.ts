@@ -381,7 +381,7 @@ export function formatToolCallsToXml(toolCalls: OpenAI.Chat.Completions.ChatComp
       for (const [key, value] of Object.entries(otherArgs)) {
         xml += `<${key}>${value}</${key}>\n`;
       }
-      xml += `</${name}>\n`;
+      xml += `</${name}>`;
 
       return xml;
     }
