@@ -136,7 +136,7 @@ describe("Tool Call Transformation", () => {
         console.log('Parsed Blocks:', JSON.stringify(parsedBlocks, null, 2))
 
         // Verify the parsed content
-        assert.strictEqual(parsedBlocks.length, 3) // empty text + thinking + tool
+        assert.strictEqual(parsedBlocks.length, 2) // thinking + tool
         
         // Verify thinking block
         assert.strictEqual(parsedBlocks[0].type, "text")
@@ -145,11 +145,6 @@ describe("Tool Call Transformation", () => {
         // Verify tool block
         assert.strictEqual(parsedBlocks[1].type, "tool_use")
         const toolBlock = parsedBlocks[1] as any
-        
-        // Verify final empty text block
-        assert.strictEqual(parsedBlocks[2].type, "text")
-        assert.strictEqual((parsedBlocks[2] as any).content.trim(), "")
-        assert.strictEqual((parsedBlocks[2] as any).partial, true)
         assert.strictEqual(toolBlock.name, "read_file")
         assert.strictEqual(toolBlock.params.path, "src/main.ts")
         assert.strictEqual(toolBlock.partial, false)
