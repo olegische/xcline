@@ -12,6 +12,14 @@ import { SYSTEM_PROMPT } from "../../core/prompts/system-no-tools"
 // Configuration
 export const xrouterBaseUrl = "https://xrouter.chat/api/v1"
 
+// Tool-supported models
+const TOOL_SUPPORTED_MODELS = [
+    'gigachat/gigachat-pro',
+    'gigachat/gigachat',
+    'yandex/llama-70b:latest',
+    'yandex/yandexgpt-pro:latest'
+]
+
 export class XRouterHandler implements ApiHandler {
     private options: ApiHandlerOptions
     private client: OpenAI
@@ -28,73 +36,87 @@ export class XRouterHandler implements ApiHandler {
     }
 
     async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
-        // Get system prompt without tool descriptions
-        const noToolsSystemPrompt = await SYSTEM_PROMPT(
-            process.cwd(),
-            false, // supportsComputerUse
-            {} as any, // mcpHub - not needed for now
-            {} as any  // browserSettings - not needed for now
-        )
-
-        // Convert Anthropic messages to OpenAI format
-        const convertedMessages = convertToOpenAiMessages(messages);
+        const modelId = this.getModel().id;
+        const isToolSupportedModel = TOOL_SUPPORTED_MODELS.includes(modelId);
         
-        // Process messages to transform reminders and extract tool calls
-        const processedMessages = convertedMessages.map(msg => {
-            if (msg.role === 'user') {
-                if (typeof msg.content === 'string') {
+        let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[];
+        
+        if (isToolSupportedModel) {
+            // Get system prompt without tool descriptions
+            const noToolsSystemPrompt = await SYSTEM_PROMPT(
+                process.cwd(),
+                false, // supportsComputerUse
+                {} as any, // mcpHub - not needed for now
+                {} as any  // browserSettings - not needed for now
+            )
+
+            // Convert Anthropic messages to OpenAI format
+            const convertedMessages = convertToOpenAiMessages(messages);
+            
+            // Process messages to transform reminders and extract tool calls
+            const processedMessages = convertedMessages.map(msg => {
+                if (msg.role === 'user') {
+                    if (typeof msg.content === 'string') {
+                        return {
+                            ...msg,
+                            content: transformReminderMessage(msg.content)
+                        };
+                    } else if (Array.isArray(msg.content)) {
+                        return {
+                            ...msg,
+                            content: msg.content.map(part => {
+                                if (part.type === 'text') {
+                                    return {
+                                        type: "text" as const,
+                                        text: transformReminderMessage(part.text)
+                                    };
+                                }
+                                return part;
+                            })
+                        };
+                    }
+                } 
+                // check tool_result src/core/Cline.ts
+                else if (msg.role === 'assistant' && typeof msg.content === 'string') {
+                    const { content, tool_calls } = extractToolCallsFromXml(msg.content);
+                    const updatedToolCalls = tool_calls?.map(toolCall => ({
+                        ...toolCall,
+                        id: ""
+                    }));
                     return {
                         ...msg,
-                        content: transformReminderMessage(msg.content)
-                    };
-                } else if (Array.isArray(msg.content)) {
-                    return {
-                        ...msg,
-                        content: msg.content.map(part => {
-                            if (part.type === 'text') {
-                                return {
-                                    type: "text" as const,
-                                    text: transformReminderMessage(part.text)
-                                };
-                            }
-                            return part;
-                        })
+                        content,
+                        tool_calls: updatedToolCalls
                     };
                 }
-            } 
-            // check tool_result src/core/Cline.ts
-            else if (msg.role === 'assistant' && typeof msg.content === 'string') {
-                const { content, tool_calls } = extractToolCallsFromXml(msg.content);
-                const updatedToolCalls = tool_calls?.map(toolCall => ({
-                    ...toolCall,
-                    id: ""
-                }));
-                return {
-                    ...msg,
-                    content,
-                    tool_calls: updatedToolCalls
-                };
-            }
-            return msg;
-        });
+                return msg;
+            });
 
-        const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-            { role: "system", content: noToolsSystemPrompt },
-            ...processedMessages,
-        ]
+            openAiMessages = [
+                { role: "system", content: noToolsSystemPrompt },
+                ...processedMessages,
+            ];
+        } else {
+            openAiMessages = [
+                { role: "system", content: systemPrompt },
+                ...convertToOpenAiMessages(messages),
+            ];
+        }
 
         // Always apply middle-out transform since models don't support prompt caching yet
         const shouldApplyMiddleOutTransform = true
 
         // @ts-ignore-next-line
         const stream = await this.client.chat.completions.create({
-            model: this.getModel().id,
+            model: modelId,
             temperature: 0,
             messages: openAiMessages,
             stream: true,
             transforms: shouldApplyMiddleOutTransform ? ["middle-out"] : undefined,
-            tools: getSystemTools(process.cwd()), // Add tools support with current working directory
-            tool_choice: "auto",
+            ...(isToolSupportedModel && {
+                tools: getSystemTools(process.cwd()),
+                tool_choice: "auto"
+            })
         })
 
         let genId: string | undefined
@@ -112,12 +134,13 @@ export class XRouterHandler implements ApiHandler {
             }
 
             const delta = chunk.choices[0]?.delta
-            if (delta?.content) {
+            if (delta?.content && delta.content.trim() !== '') {
                 yield {
                     type: "text",
                     text: delta.content,
                 }
-            } else if (delta?.tool_calls) {
+            }
+            if (isToolSupportedModel && delta?.tool_calls) {
                 // TODO: call convertToAnthropicMessage --> tool_use message. 
                 // check src/core/Cline.ts recursivelyMakeClineRequests 
                 yield {
