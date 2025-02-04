@@ -61,7 +61,9 @@ export class XRouterHandler implements ApiHandler {
                         })
                     };
                 }
-            } else if (msg.role === 'assistant' && typeof msg.content === 'string') {
+            } 
+            // check tool_result src/core/Cline.ts
+            else if (msg.role === 'assistant' && typeof msg.content === 'string') {
                 const { content, tool_calls } = extractToolCallsFromXml(msg.content);
                 const updatedToolCalls = tool_calls?.map(toolCall => ({
                     ...toolCall,
@@ -92,6 +94,7 @@ export class XRouterHandler implements ApiHandler {
             stream: true,
             transforms: shouldApplyMiddleOutTransform ? ["middle-out"] : undefined,
             tools: getSystemTools(process.cwd()), // Add tools support with current working directory
+            tool_choice: "auto",
         })
 
         let genId: string | undefined
@@ -115,6 +118,8 @@ export class XRouterHandler implements ApiHandler {
                     text: delta.content,
                 }
             } else if (delta?.tool_calls) {
+                // TODO: call convertToAnthropicMessage --> tool_use message. 
+                // check src/core/Cline.ts recursivelyMakeClineRequests 
                 yield {
                     type: "text",
                     text: formatToolCallsToXml(delta.tool_calls)

@@ -18,9 +18,13 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
           requires_approval: {
             type: "boolean",
             description: "A boolean indicating whether this command requires explicit user approval before execution in case the user has auto-approve mode enabled. Set to 'true' for potentially impactful operations like installing/uninstalling packages, deleting/overwriting files, system configuration changes, network operations, or any commands that could have unintended side effects. Set to 'false' for safe operations like reading files/directories, running development servers, building projects, and other non-destructive operations."
+          },
+          thinking: {
+            type: "string",
+            description: "The model's thought process and analysis before executing the command"
           }
         },
-        required: ["command", "requires_approval"]
+        required: ["command", "requires_approval", "thinking"]
       }
     }
   },
@@ -35,9 +39,13 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
           path: {
             type: "string",
             description: `The path of the file to read (relative to the current working directory ${cwd.toPosix()})`
+          },
+          thinking: {
+            type: "string",
+            description: "The model's thought process and analysis before reading the file"
           }
         },
-        required: ["path"]
+        required: ["path", "thinking"]
       }
     }
   },
@@ -56,9 +64,13 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
           content: {
             type: "string",
             description: "The content to write to the file. ALWAYS provide the COMPLETE intended content of the file, without any truncation or omissions. You MUST include ALL parts of the file, even if they haven't been modified."
+          },
+          thinking: {
+            type: "string",
+            description: "The model's thought process and analysis before writing to the file"
           }
         },
-        required: ["path", "content"]
+        required: ["path", "content", "thinking"]
       }
     }
   },
@@ -100,9 +112,13 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
   4. Special operations:
      * To move code: Use two SEARCH/REPLACE blocks (one to delete from original + one to insert at new location)
      * To delete code: Use empty REPLACE section`
+          },
+          thinking: {
+            type: "string",
+            description: "The model's thought process and analysis before executing the command"
           }
         },
-        required: ["path", "diff"]
+        required: ["path", "diff", "thinking"]
       }
     }
   },
@@ -125,9 +141,13 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
           file_pattern: {
             type: "string",
             description: "Glob pattern to filter files (e.g., '*.ts' for TypeScript files). If not provided, it will search all files (*)."
+          },
+          thinking: {
+            type: "string",
+            description: "The model's thought process and analysis before performing the search"
           }
         },
-        required: ["path", "regex"]
+        required: ["path", "regex", "thinking"]
       }
     }
   },
@@ -146,9 +166,13 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
           recursive: {
             type: "boolean",
             description: "Whether to list files recursively. Use true for recursive listing, false or omit for top-level only."
+          },
+          thinking: {
+            type: "string",
+            description: "The model's thought process and analysis before listing files"
           }
         },
-        required: ["path"]
+        required: ["path", "thinking"]
       }
     }
   },
@@ -163,9 +187,13 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
           path: {
             type: "string",
             description: `The path of the directory (relative to the current working directory ${cwd.toPosix()}) to list top level source code definitions for.`
+          },
+          thinking: {
+            type: "string",
+            description: "The model's thought process and analysis before listing code definitions"
           }
         },
-        required: ["path"]
+        required: ["path", "thinking"]
       }
     }
   },
@@ -197,9 +225,13 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
           text: {
             type: "string",
             description: "The text to type (for type action)"
+          },
+          thinking: {
+            type: "string",
+            description: "The model's thought process and analysis before performing the browser action"
           }
         },
-        required: ["action"]
+        required: ["action", "thinking"]
       }
     }
   },
@@ -214,9 +246,13 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
           question: {
             type: "string",
             description: "The question to ask the user"
+          },
+          thinking: {
+            type: "string",
+            description: "The model's thought process and analysis before asking the question"
           }
         },
-        required: ["question"]
+        required: ["question", "thinking"]
       }
     }
   },
@@ -235,9 +271,13 @@ export function getSystemTools(cwd: string): OpenAI.Chat.ChatCompletionTool[] {
           command: {
             type: "string",
             description: "Optional command to demonstrate the result"
+          },
+          thinking: {
+            type: "string",
+            description: "The model's thought process and analysis before completing the task"
           }
         },
-        required: ["result"]
+        required: ["result", "thinking"]
       }
     }
   }
