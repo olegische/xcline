@@ -14,10 +14,11 @@ export const xrouterBaseUrl = "https://xrouter.chat/api/v1"
 
 // Tool-supported models
 const TOOL_SUPPORTED_MODELS = [
-    'gigachat/gigachat-pro',
     'gigachat/gigachat',
-    'yandex/llama-70b:latest',
-    'yandex/yandexgpt-pro:latest'
+    'gigachat/gigachat-pro',
+    'gigachat/gigachat-max',
+    'yandex/yandexgpt-pro:latest',
+    'yandex/llama-70b:latest'
 ]
 
 export class XRouterHandler implements ApiHandler {
@@ -78,16 +79,17 @@ export class XRouterHandler implements ApiHandler {
                 } 
                 // check tool_result src/core/Cline.ts
                 else if (msg.role === 'assistant' && typeof msg.content === 'string') {
-                    const { content, tool_calls } = extractToolCallsFromXml(msg.content);
-                    const updatedToolCalls = tool_calls?.map(toolCall => ({
-                        ...toolCall,
-                        id: ""
-                    }));
-                    return {
-                        ...msg,
-                        content,
-                        tool_calls: updatedToolCalls
-                    };
+                    // Only transform to tool calls if there's a thinking tag
+                    if (msg.content.includes('<thinking>')) {
+                        const { tool_calls } = extractToolCallsFromXml(msg.content);
+                        return {
+                            ...msg,
+                            content: "", // Empty for tool calls
+                            tool_calls
+                        };
+                    }
+                    // If no thinking tag, leave message as is
+                    return msg;
                 }
                 return msg;
             });
@@ -134,18 +136,19 @@ export class XRouterHandler implements ApiHandler {
             }
 
             const delta = chunk.choices[0]?.delta
-            if (delta?.content && delta.content.trim() !== '') {
+            if (delta?.content) {
                 yield {
                     type: "text",
                     text: delta.content,
                 }
             }
             if (isToolSupportedModel && delta?.tool_calls) {
-                // TODO: call convertToAnthropicMessage --> tool_use message. 
-                // check src/core/Cline.ts recursivelyMakeClineRequests 
-                yield {
-                    type: "text",
-                    text: formatToolCallsToXml(delta.tool_calls)
+                const xml = formatToolCallsToXml(delta.tool_calls);
+                if (xml) {
+                    yield {
+                        type: "text",
+                        text: xml
+                    }
                 }
             }
         }

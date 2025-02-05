@@ -392,32 +392,46 @@ Always adhere to this format to ensure proper execution of tool/function calls.`
 }
 
 export function extractToolCallsFromXml(content: string): { content: string | undefined; tool_calls: OpenAI.Chat.ChatCompletionMessageToolCall[] | undefined } {
-  // Transform reminder message if present
-  content = transformReminderMessage(content);
-  
   const toolCalls: OpenAI.Chat.ChatCompletionMessageToolCall[] = [];
-  let remainingContent = content;
+
+  // First extract thinking blocks and their content
+  const thinkingRegex = /<thinking>([\s\S]*?)<\/thinking>/g;
+  let thinkingMatch;
+  let thinking: string | undefined;
+  
+  while ((thinkingMatch = thinkingRegex.exec(content)) !== null) {
+    thinking = thinkingMatch[1].trim();
+  }
 
   // Regular expression to match XML tool calls
-  const toolCallRegex = /<(\w+)>\s*((?:<\w+>[^<>]*<\/\w+>\s*)*)<\/\1>/g;
+  const toolCallRegex = /<(\w+)>\s*((?:<\w+>[\s\S]*?<\/\w+>\s*)*)<\/\1>/g;
   let match;
 
   while ((match = toolCallRegex.exec(content)) !== null) {
     const toolName = match[1];
+    if (toolName === 'thinking') {
+      continue; // Skip thinking tags as they're already processed
+    }
+
     const paramsXml = match[2];
-    const fullMatch = match[0];
 
     // Parse parameters from XML
     const params: Record<string, string> = {};
-    const paramRegex = /<(\w+)>([^<>]*)<\/\1>/g;
+    const paramRegex = /<(\w+)>([\s\S]*?)<\/\1>/g;
     let paramMatch;
     while ((paramMatch = paramRegex.exec(paramsXml)) !== null) {
-      params[paramMatch[1]] = paramMatch[2];
+      const [_, paramName, paramValue] = paramMatch;
+      params[paramName] = paramValue.trim();
     }
 
     // Create tool call in OpenAI format
     const toolId = params.tool_use_id || `call_${toolCalls.length + 1}`;
     delete params.tool_use_id; // Remove tool_use_id from params before creating arguments
+
+    // Add thinking back to arguments if it exists
+    if (thinking) {
+      params.thinking = thinking;
+    }
 
     toolCalls.push({
       id: toolId,
@@ -427,16 +441,10 @@ export function extractToolCallsFromXml(content: string): { content: string | un
         arguments: JSON.stringify(params)
       }
     });
-
-    // Remove the tool call from content
-    remainingContent = remainingContent.replace(fullMatch, '');
   }
 
-  // Clean up remaining content
-  remainingContent = remainingContent.trim();
-
   return {
-    content: remainingContent || undefined,
+    content: "", // Always return empty content for assistant messages
     tool_calls: toolCalls.length > 0 ? toolCalls : undefined
   };
 }
