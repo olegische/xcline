@@ -133,13 +133,6 @@ export function activate(context: vscode.ExtensionContext) {
 			return
 		}
 		switch (path) {
-			case "/openrouter": {
-				const code = query.get("code")
-				if (code) {
-					await visibleProvider.handleOpenRouterCallback(code)
-				}
-				break
-			}
 			// case "/xrouter": {
 			// 	const code = query.get("code")
 			// 	if (code) {
