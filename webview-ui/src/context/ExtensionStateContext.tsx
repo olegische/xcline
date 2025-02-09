@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { useEvent } from "react-use"
 import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "../../../src/shared/AutoApprovalSettings"
 import { ExtensionMessage, ExtensionState } from "../../../src/shared/ExtensionMessage"
-import { ApiConfiguration, ModelInfo, openRouterDefaultModelId, openRouterDefaultModelInfo, xRouterDefaultModelId, xRouterDefaultModelInfo } from "../../../src/shared/api"
+import { ApiConfiguration, ModelInfo, xRouterDefaultModelId, xRouterDefaultModelInfo } from "../../../src/shared/api"
 import { findLastIndex } from "../../../src/shared/array"
 import { McpServer } from "../../../src/shared/mcp"
 import { convertTextMateToHljs } from "../utils/textMateToHljs"
@@ -13,7 +13,6 @@ interface ExtensionStateContextType extends ExtensionState {
 	didHydrateState: boolean
 	showWelcome: boolean
 	theme: any
-	openRouterModels: Record<string, ModelInfo>
 	xRouterModels: Record<string, ModelInfo>
 	mcpServers: McpServer[]
 	filePaths: string[]
@@ -39,9 +38,6 @@ export const ExtensionStateContextProvider: React.FC<{
 	const [showWelcome, setShowWelcome] = useState(false)
 	const [theme, setTheme] = useState<any>(undefined)
 	const [filePaths, setFilePaths] = useState<string[]>([])
-	const [openRouterModels, setOpenRouterModels] = useState<Record<string, ModelInfo>>({
-		[openRouterDefaultModelId]: openRouterDefaultModelInfo,
-	})
 	const [xRouterModels, setXRouterModels] = useState<Record<string, ModelInfo>>({
 		[xRouterDefaultModelId]: xRouterDefaultModelInfo,
 	})
@@ -55,18 +51,10 @@ export const ExtensionStateContextProvider: React.FC<{
 				const config = message.state?.apiConfiguration
 				const hasKey = config
 					? [
-							config.apiKey,
-							config.openRouterApiKey,
 							config.xRouterApiKey,
-							config.awsRegion,
-							config.vertexProjectId,
 							config.openAiApiKey,
 							config.ollamaModelId,
 							config.lmStudioModelId,
-							config.geminiApiKey,
-							config.openAiNativeApiKey,
-							config.deepSeekApiKey,
-							config.mistralApiKey,
 						].some((key) => key !== undefined)
 					: false
 				setShowWelcome(!hasKey)
@@ -97,14 +85,6 @@ export const ExtensionStateContextProvider: React.FC<{
 				})
 				break
 			}
-			case "openRouterModels": {
-				const updatedModels = message.openRouterModels ?? {}
-				setOpenRouterModels({
-					[openRouterDefaultModelId]: openRouterDefaultModelInfo, // in case the extension sent a model list without the default model
-					...updatedModels,
-				})
-				break
-			}
 			case "xRouterModels": {
 				const updatedModels = message.xRouterModels ?? {}
 				setXRouterModels({
@@ -131,7 +111,6 @@ export const ExtensionStateContextProvider: React.FC<{
 		didHydrateState,
 		showWelcome,
 		theme,
-		openRouterModels,
 		xRouterModels,
 		mcpServers,
 		filePaths,
