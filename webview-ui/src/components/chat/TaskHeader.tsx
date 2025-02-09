@@ -97,12 +97,11 @@ const TaskHeader: React.FC<TaskHeaderProps> = ({
 		return (
 			apiConfiguration?.apiProvider !== "openai" &&
 			apiConfiguration?.apiProvider !== "ollama" &&
-			apiConfiguration?.apiProvider !== "lmstudio" &&
-			apiConfiguration?.apiProvider !== "gemini"
+			apiConfiguration?.apiProvider !== "lmstudio"
 		)
 	}, [apiConfiguration?.apiProvider])
 
-	const shouldShowPromptCacheInfo = doesModelSupportPromptCache && apiConfiguration?.apiProvider !== "openrouter"
+	const shouldShowPromptCacheInfo = doesModelSupportPromptCache
 
 	return (
 		<div style={{ padding: "10px 13px 10px 13px" }}>
