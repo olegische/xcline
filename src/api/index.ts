@@ -11,6 +11,10 @@ export interface ApiHandler {
 	getModel(): { id: string; info: ModelInfo }
 }
 
+export interface SingleCompletionHandler {
+	completePrompt(prompt: string): Promise<string>
+}
+
 export function buildApiHandler(configuration: ApiConfiguration): ApiHandler {
 	const { apiProvider, ...options } = configuration
 	switch (apiProvider) {

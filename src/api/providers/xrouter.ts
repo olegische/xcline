@@ -11,96 +11,96 @@ import delay from "delay"
 export const xrouterBaseUrl = "https://xrouter.chat/api/v1"
 
 export class XRouterHandler implements ApiHandler {
-    private options: ApiHandlerOptions
-    private client: OpenAI
+	private options: ApiHandlerOptions
+	private client: OpenAI
 
-    constructor(options: ApiHandlerOptions) {
-        this.options = options
-        this.client = new OpenAI({
-            baseURL: xrouterBaseUrl,
-            apiKey: this.options.xRouterApiKey,
-            defaultHeaders: {
-                "X-Title": "xCline",
-            },
-        })
-    }
+	constructor(options: ApiHandlerOptions) {
+		this.options = options
+		this.client = new OpenAI({
+			baseURL: xrouterBaseUrl,
+			apiKey: this.options.xRouterApiKey,
+			defaultHeaders: {
+				"X-Title": "xCline",
+			},
+		})
+	}
 
-    async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
-        // Convert Anthropic messages to OpenAI format
-        const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-            { role: "system", content: systemPrompt },
-            ...convertToOpenAiMessages(messages),
-        ]
+	async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+		// Convert Anthropic messages to OpenAI format
+		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+			{ role: "system", content: systemPrompt },
+			...convertToOpenAiMessages(messages),
+		]
 
-        // Always apply middle-out transform since models don't support prompt caching yet
-        const shouldApplyMiddleOutTransform = true
+		// Always apply middle-out transform since models don't support prompt caching yet
+		const shouldApplyMiddleOutTransform = true
 
-        // @ts-ignore-next-line
-        const stream = await this.client.chat.completions.create({
-            model: this.getModel().id,
-            temperature: 0,
-            messages: openAiMessages,
-            stream: true,
-            transforms: shouldApplyMiddleOutTransform ? ["middle-out"] : undefined,
-        })
+		// @ts-ignore-next-line
+		const stream = await this.client.chat.completions.create({
+			model: this.getModel().id,
+			temperature: 0,
+			messages: openAiMessages,
+			stream: true,
+			transforms: shouldApplyMiddleOutTransform ? ["middle-out"] : undefined,
+		})
 
-        let genId: string | undefined
+		let genId: string | undefined
 
-        for await (const chunk of stream) {
-            // xrouter returns an error object instead of the openai sdk throwing an error
-            if ("error" in chunk) {
-                const error = chunk.error as { message?: string; code?: number }
-                console.error(`XRouter API Error: ${error?.code} - ${error?.message}`)
-                throw new Error(`XRouter API Error ${error?.code}: ${error?.message}`)
-            }
+		for await (const chunk of stream) {
+			// xrouter returns an error object instead of the openai sdk throwing an error
+			if ("error" in chunk) {
+				const error = chunk.error as { message?: string; code?: number }
+				console.error(`XRouter API Error: ${error?.code} - ${error?.message}`)
+				throw new Error(`XRouter API Error ${error?.code}: ${error?.message}`)
+			}
 
-            if (!genId && chunk.id) {
-                genId = chunk.id
-            }
+			if (!genId && chunk.id) {
+				genId = chunk.id
+			}
 
-            const delta = chunk.choices[0]?.delta
-            if (delta?.content) {
-                yield {
-                    type: "text",
-                    text: delta.content,
-                }
-            }
-        }
+			const delta = chunk.choices[0]?.delta
+			if (delta?.content) {
+				yield {
+					type: "text",
+					text: delta.content,
+				}
+			}
+		}
 
-        await delay(500) // FIXME: necessary delay to ensure generation endpoint is ready
+		await delay(500) // FIXME: necessary delay to ensure generation endpoint is ready
 
-        try {
-            const response = await axios.get(`${xrouterBaseUrl}/generation?id=${genId}`, {
-                headers: {
-                    Authorization: `Bearer ${this.options.xRouterApiKey}`,
-                    "X-Title": "xCline",
-                },
-                timeout: 5_000,
-            })
+		try {
+			const response = await axios.get(`${xrouterBaseUrl}/generation?id=${genId}`, {
+				headers: {
+					Authorization: `Bearer ${this.options.xRouterApiKey}`,
+					"X-Title": "xCline",
+				},
+				timeout: 5_000,
+			})
 
-            const generation = response.data?.data
-            console.log("XRouter generation details:", response.data)
-            yield {
-                type: "usage",
-                inputTokens: generation?.native_tokens_prompt || 0,
-                outputTokens: generation?.native_tokens_completion || 0,
-                totalCost: generation?.total_cost || 0,
-            }
-        } catch (error) {
-            // ignore if fails
-            console.error("Error fetching XRouter generation details:", error)
-        }
-    }
+			const generation = response.data?.data
+			console.log("XRouter generation details:", response.data)
+			yield {
+				type: "usage",
+				inputTokens: generation?.native_tokens_prompt || 0,
+				outputTokens: generation?.native_tokens_completion || 0,
+				totalCost: generation?.total_cost || 0,
+			}
+		} catch (error) {
+			// ignore if fails
+			console.error("Error fetching XRouter generation details:", error)
+		}
+	}
 
-    getModel(): { id: string; info: ModelInfo } {
-        const modelId = this.options.xRouterModelId
-        const modelInfo = this.options.xRouterModelInfo
-        if (modelId && modelInfo) {
-            return { id: modelId, info: modelInfo }
-        }
-        return {
-            id: xRouterDefaultModelId,
-            info: xRouterDefaultModelInfo,
-        }
-    }
+	getModel(): { id: string; info: ModelInfo } {
+		const modelId = this.options.xRouterModelId
+		const modelInfo = this.options.xRouterModelInfo
+		if (modelId && modelInfo) {
+			return { id: modelId, info: modelInfo }
+		}
+		return {
+			id: xRouterDefaultModelId,
+			info: xRouterDefaultModelInfo,
+		}
+	}
 }

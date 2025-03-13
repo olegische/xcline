@@ -9,8 +9,14 @@ import { useExtensionState } from "../../context/ExtensionStateContext"
 import { vscode } from "../../utils/vscode"
 import { highlight } from "../history/HistoryView"
 import { ModelInfoView, normalizeApiConfiguration } from "./ApiOptions"
+import { CODE_BLOCK_BG_COLOR } from "../common/CodeBlock"
+import ThinkingBudgetSlider from "./ThinkingBudgetSlider"
 
-const XRouterModelPicker: React.FC = () => {
+export interface XRouterModelPickerProps {
+	isPopup?: boolean
+}
+
+const XRouterModelPicker: React.FC<XRouterModelPickerProps> = ({ isPopup }) => {
 	const { apiConfiguration, setApiConfiguration, xRouterModels } = useExtensionState()
 	const [searchTerm, setSearchTerm] = useState(apiConfiguration?.xRouterModelId || xRouterDefaultModelId)
 	const [isDropdownVisible, setIsDropdownVisible] = useState(false)
@@ -23,8 +29,10 @@ const XRouterModelPicker: React.FC = () => {
 	const handleModelChange = (newModelId: string) => {
 		setApiConfiguration({
 			...apiConfiguration,
-			xRouterModelId: newModelId,
-			xRouterModelInfo: xRouterModels[newModelId],
+			...{
+				xRouterModelId: newModelId,
+				xRouterModelInfo: xRouterModels[newModelId],
+			},
 		})
 		setSearchTerm(newModelId)
 	}
@@ -107,7 +115,11 @@ const XRouterModelPicker: React.FC = () => {
 	}
 
 	const hasInfo = useMemo(() => {
-		return modelIds.some((id) => id.toLowerCase() === searchTerm.toLowerCase())
+		try {
+			return modelIds.some((id) => id.toLowerCase() === searchTerm.toLowerCase())
+		} catch {
+			return false
+		}
 	}, [modelIds, searchTerm])
 
 	useEffect(() => {
@@ -126,8 +138,15 @@ const XRouterModelPicker: React.FC = () => {
 		}
 	}, [selectedIndex])
 
+	const showBudgetSlider = useMemo(() => {
+		return (
+			selectedModelId?.toLowerCase().includes("claude-3-7-sonnet") ||
+			selectedModelId?.toLowerCase().includes("claude-3.7-sonnet")
+		)
+	}, [selectedModelId])
+
 	return (
-		<>
+		<div style={{ width: "100%" }}>
 			<style>
 				{`
 				.model-item-highlight {
@@ -136,7 +155,7 @@ const XRouterModelPicker: React.FC = () => {
 				}
 				`}
 			</style>
-			<div>
+			<div style={{ display: "flex", flexDirection: "column" }}>
 				<label htmlFor="model-search">
 					<span style={{ fontWeight: 500 }}>Model</span>
 				</label>
@@ -197,12 +216,18 @@ const XRouterModelPicker: React.FC = () => {
 			</div>
 
 			{hasInfo ? (
-				<ModelInfoView
-					selectedModelId={selectedModelId}
-					modelInfo={selectedModelInfo}
-					isDescriptionExpanded={isDescriptionExpanded}
-					setIsDescriptionExpanded={setIsDescriptionExpanded}
-				/>
+				<>
+					{showBudgetSlider && (
+						<ThinkingBudgetSlider apiConfiguration={apiConfiguration} setApiConfiguration={setApiConfiguration} />
+					)}
+					<ModelInfoView
+						selectedModelId={selectedModelId}
+						modelInfo={selectedModelInfo}
+						isDescriptionExpanded={isDescriptionExpanded}
+						setIsDescriptionExpanded={setIsDescriptionExpanded}
+						isPopup={isPopup}
+					/>
+				</>
 			) : (
 				<p
 					style={{
@@ -210,19 +235,24 @@ const XRouterModelPicker: React.FC = () => {
 						marginTop: 0,
 						color: "var(--vscode-descriptionForeground)",
 					}}>
-					The extension automatically fetches the latest list of models available on{" "}
-					<VSCodeLink style={{ display: "inline", fontSize: "inherit" }} href="https://xrouter.chat/models">
-						XRouter.
-					</VSCodeLink>
-					If you're unsure which model to choose, Cline works best with{" "}
-					<VSCodeLink
-						style={{ display: "inline", fontSize: "inherit" }}
-						onClick={() => handleModelChange("gigachat/gigachat")}>
-						gigachat/gigachat.
-					</VSCodeLink>
+					<>
+						The extension automatically fetches the latest list of models available on{" "}
+						<VSCodeLink
+							style={{ display: "inline", fontSize: "inherit" }}
+							href="https://ai.xrouter.chat/api/v1/models">
+							XRouter.
+						</VSCodeLink>
+						If you're unsure which model to choose, XCline works best with{" "}
+						<VSCodeLink
+							style={{ display: "inline", fontSize: "inherit" }}
+							onClick={() => handleModelChange("gigachat/gigachat")}>
+							gigachat/gigachat.
+						</VSCodeLink>
+						You can also try searching "free" for no-cost options currently available.
+					</>
 				</p>
 			)}
-		</>
+		</div>
 	)
 }
 
@@ -288,11 +318,13 @@ export const ModelDescriptionMarkdown = memo(
 		key,
 		isExpanded,
 		setIsExpanded,
+		isPopup,
 	}: {
 		markdown?: string
 		key: string
 		isExpanded: boolean
 		setIsExpanded: (isExpanded: boolean) => void
+		isPopup?: boolean
 	}) => {
 		const [reactContent, setMarkdown] = useRemark()
 		const [showSeeMore, setShowSeeMore] = useState(false)
@@ -353,7 +385,7 @@ export const ModelDescriptionMarkdown = memo(
 									fontSize: "inherit",
 									paddingRight: 0,
 									paddingLeft: 3,
-									backgroundColor: "var(--vscode-sideBar-background)",
+									backgroundColor: isPopup ? CODE_BLOCK_BG_COLOR : "var(--vscode-sideBar-background)",
 								}}
 								onClick={() => setIsExpanded(true)}>
 								See more
